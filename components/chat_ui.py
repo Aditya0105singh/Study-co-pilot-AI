@@ -200,20 +200,56 @@ def chat_interface(mode):
     # Input
     prompt = st.chat_input(placeholder)
     if prompt:
-        final_prompt = f"Context: {pdf_content[:10000]}\n\nUser: {prompt}" if pdf_content else prompt
+        # Build context BEFORE appending new user msg
+        previous_context = get_previous_messages_summary(st.session_state.messages, limit=4)
+
+        # Build final prompt with PDF context
+        if pdf_content:
+            final_prompt = f"PDF Context:\n{pdf_content[:8000]}\n\nConversation so far:\n{previous_context}\n\nUser: {prompt}"
+        else:
+            final_prompt = f"Conversation so far:\n{previous_context}\n\nUser: {prompt}" if previous_context else prompt
+
+        # Store user message + pending AI call, then rerun to render user msg cleanly
         st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state._pending_prompt = final_prompt
+        st.session_state._pending_prev   = previous_context
+        st.session_state._pending_mode   = mode
+        st.rerun()
+
+    # Second pass: execute AI call after user message is already displayed
+    if (st.session_state.get("_pending_prompt")
+            and st.session_state.get("_pending_mode") == mode):
+
+        final_prompt     = st.session_state.pop("_pending_prompt")
+        previous_context = st.session_state.pop("_pending_prev", "")
+        st.session_state.pop("_pending_mode", None)
 
         with st.chat_message("assistant"):
             with st.spinner("Thinking…"):
                 try:
-                    if mode == "explainer":    res = explain_concept(final_prompt, "")
+                    if mode == "explainer":    res = explain_concept(final_prompt, previous_context)
                     elif mode == "visualizer": res = generate_visual(final_prompt)
                     elif mode == "flashcards": res = generate_flashcards_api(final_prompt)
-                    elif mode == "quizzer":    res = generate_questions(final_prompt, "")
-                    elif mode == "interview":  res = interview_prep(prompt, "Fresher")
-                    else:                      res = explain_concept(final_prompt, "")
+                    elif mode == "quizzer":    res = generate_questions(final_prompt, previous_context)
+                    elif mode == "interview":  res = interview_prep(final_prompt, "Fresher")
+                    elif mode == "resume":     res = explain_concept(final_prompt, previous_context)
+                    else:                      res = explain_concept(final_prompt, previous_context)
 
                     st.session_state.messages.append({"role": "assistant", "content": res})
-                    st.rerun()
+                    log_usage(mode, st.session_state.get("answer_style",""), bool(pdf_content), final_prompt[:120], res[:120])
+
+                    # Render inline
+                    if mode == "visualizer" and "[DIAGRAM_START]" in res:
+                        parts = res.split("[DIAGRAM_START]")
+                        st.markdown(parts[0])
+                        render_mermaid(parts[1].split("[DIAGRAM_END]")[0].strip())
+                    elif mode == "flashcards" and "Q:" in res:
+                        render_flashcards(res)
+                    else:
+                        render_ai_response_card(res, mode)
+
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    err_msg = f"❌ Error: {str(e)}"
+                    st.session_state.messages.append({"role": "assistant", "content": err_msg})
+                    st.error(err_msg)
+

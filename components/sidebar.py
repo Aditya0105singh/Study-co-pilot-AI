@@ -1,9 +1,15 @@
 import streamlit as st
-from components.pdf_handler import handle_pdf_upload
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 from components.pomodoro import pomodoro_timer
 
+# Load .env so we can check which keys exist
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=_env_path)
+
 def sidebar_ui():
-    """Sidebar with model selector and tools — Premium Universal theme."""
+    """Sidebar with model selector and tools — Premium Dark theme."""
 
     st.sidebar.markdown("""
     <div style="padding: 0.5rem 0 1rem;">
@@ -12,11 +18,23 @@ def sidebar_ui():
     </div>
     """, unsafe_allow_html=True)
 
+    # Only show models that have a valid API key in .env
+    available_models = []
+    if os.getenv("GEMINI_API_KEY"):
+        available_models.append("Gemini")
+    if os.getenv("GROQ_API_KEY"):
+        available_models.append("Groq (Free)")
+    if os.getenv("XAI_API_KEY"):
+        available_models.append("Grok (xAI)")
+
+    if not available_models:
+        available_models = ["Gemini"]  # fallback label
+
     st.session_state.api_choice = st.sidebar.selectbox(
         "AI Engine",
-        ["Gemini", "Groq (Free)", "Grok (xAI)"],
+        available_models,
         index=0,
-        help="Select the AI model to use"
+        help="Only models with valid API keys are shown"
     )
 
     # Model badge
