@@ -53,6 +53,22 @@ st.markdown("""
     --c-orange: #F97316;
 }
 
+@keyframes shimmer {
+    0% { background-position: 200% center; }
+    100% { background-position: -200% center; }
+}
+
+@keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
 /* Subtle architectural grid pattern to break up pure black */
 .stApp {
     background-color: #050505;
@@ -69,7 +85,6 @@ section.main > div.block-container {
 
 .hero-badge {
     display: inline-block;
-    background: #111111;
     color: #DDDDDD;
     font-size: 0.75rem;
     font-weight: 600;
@@ -80,10 +95,15 @@ section.main > div.block-container {
     border: 1px solid #222222;
     transition: all 0.3s ease;
     cursor: default;
+    
+    /* Shimmer Effect */
+    background: linear-gradient(90deg, #111111 25%, #2a2a35 50%, #111111 75%);
+    background-size: 200% auto;
+    animation: shimmer 4s linear infinite;
 }
 .hero-badge:hover {
     border-color: var(--primary);
-    box-shadow: 0 0 15px rgba(94, 106, 210, 0.25);
+    box-shadow: 0 0 15px rgba(94, 106, 210, 0.4);
     color: #FFFFFF;
 }
 
@@ -96,6 +116,7 @@ section.main > div.block-container {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.8rem;
+    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero-subtitle {
@@ -121,13 +142,23 @@ section.main > div.block-container {
     border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 1.2rem 1.4rem;
-    transition: all 0.25s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     position: relative;
     overflow: hidden;
     margin-bottom: 0.4rem;
     backdrop-filter: blur(10px);
+    
+    /* Entrance Animation */
+    opacity: 0;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Stagger entrance by element index roughly */
+div[data-testid="column"]:nth-child(1) .fcard { animation-delay: 0.1s; }
+div[data-testid="column"]:nth-child(2) .fcard { animation-delay: 0.2s; }
+div[data-testid="column"]:nth-child(3) .fcard { animation-delay: 0.3s; }
+
 .fcard::before {
     content: '';
     position: absolute;
@@ -135,11 +166,12 @@ section.main > div.block-container {
     height: 3px;
     border-radius: 14px 14px 0 0;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.3s ease;
 }
 .fcard:hover { 
-    transform: translateY(-4px); 
-    box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+    transform: translateY(-8px) scale(1.02); 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.9);
+    z-index: 10;
 }
 .fcard:hover::before { opacity: 1; }
 
