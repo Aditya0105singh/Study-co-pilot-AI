@@ -83,28 +83,33 @@ section.main > div.block-container {
 
 .hero-wrap { text-align: center; padding: 3rem 1rem 2.5rem; position: relative; }
 
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px rgba(94, 106, 210, 0.2); border-color: rgba(94, 106, 210, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(94, 106, 210, 0.6); border-color: rgba(94, 106, 210, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(94, 106, 210, 0.2); border-color: rgba(94, 106, 210, 0.3); }
+}
+
 .hero-badge {
     display: inline-block;
-    color: #DDDDDD;
+    color: #EEEEEE;
     font-size: 0.75rem;
     font-weight: 600;
     padding: 5px 16px;
     border-radius: 20px;
     letter-spacing: 0.5px;
     margin-bottom: 1rem;
-    border: 1px solid #222222;
+    border: 1px solid var(--primary);
     transition: all 0.3s ease;
     cursor: default;
     
-    /* Shimmer Effect */
+    /* Shimmer & Continuous Glow Effect */
     background: linear-gradient(90deg, #111111 25%, #2a2a35 50%, #111111 75%);
     background-size: 200% auto;
-    animation: shimmer 4s linear infinite;
+    animation: shimmer 4s linear infinite, pulseGlow 3s ease-in-out infinite;
 }
 .hero-badge:hover {
-    border-color: var(--primary);
-    box-shadow: 0 0 15px rgba(94, 106, 210, 0.4);
     color: #FFFFFF;
+    transform: translateY(-1px);
 }
 
 .hero-title {
