@@ -42,15 +42,45 @@ def pomodoro_timer():
         <html>
         <head>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
             html, body {{ margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: transparent; overflow: hidden; }}
-            .pbox {{ text-align:center; background:#0A0A0A; padding:12px; border-radius:10px; border:1px solid #222222; margin:4px 0; }}
-            .ptime {{ font-size:2rem; font-weight:700; letter-spacing:-1px; color:#EEEEEE; }}
-            .pstatus {{ font-size:0.65rem; color:{color}; margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:1px; }}
+            .pbox {{
+                text-align: center;
+                background: linear-gradient(145deg, #16161A, #0C0C0E);
+                padding: 14px 10px;
+                border-radius: 14px;
+                border: 1px solid #27272A;
+                margin: 4px 0;
+                box-shadow: inset 0 2px 10px rgba(255,255,255,0.02), 0 4px 12px rgba(0,0,0,0.5);
+                position: relative;
+                overflow: hidden;
+            }}
+            /* Subtle glow accent line across the top */
+            .pbox::before {{
+                content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+                background: {color}; opacity: 0.8;
+                box-shadow: 0 0 10px {color};
+            }}
+            .ptime {{
+                font-size: 2.2rem;
+                font-weight: 800;
+                letter-spacing: -1px;
+                color: #FFFFFF;
+                text-shadow: 0 0 10px rgba(255,255,255,0.1);
+                line-height: 1;
+            }}
+            .pstatus {{
+                font-size: 0.65rem;
+                color: {color};
+                margin-top: 6px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+            }}
             @media (max-width: 480px) {{
-                .pbox {{ padding: 8px; border-radius: 8px; }}
-                .ptime {{ font-size: 1.5rem; }}
-                .pstatus {{ font-size: 0.6rem; }}
+                .pbox {{ padding: 10px; border-radius: 10px; }}
+                .ptime {{ font-size: 1.8rem; }}
+                .pstatus {{ font-size: 0.55rem; }}
             }}
         </style>
         </head>

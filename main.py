@@ -38,9 +38,9 @@ st.markdown("""
 *, *::before, *::after { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
 
 :root {
-    --card-bg: #0A0A0A;
-    --card-border: #222222;
-    --card-hover-border: #444444;
+    --card-bg: #0C0C0E;
+    --card-border: #222225;
+    --card-hover-border: #44444A;
     
     --text-muted: #888888;
     --primary: #5E6AD2;
@@ -51,6 +51,14 @@ st.markdown("""
     --c-teal:   #14B8A6;
     --c-rose:   #F43F5E;
     --c-orange: #F97316;
+}
+
+/* Subtle architectural grid pattern to break up pure black */
+.stApp {
+    background-color: #050505;
+    background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
 }
 
 section.main > div.block-container {
@@ -118,6 +126,7 @@ section.main > div.block-container {
     position: relative;
     overflow: hidden;
     margin-bottom: 0.4rem;
+    backdrop-filter: blur(10px);
 }
 .fcard::before {
     content: '';
@@ -166,12 +175,12 @@ div.stButton > button {
     padding: 0.55rem 1.2rem !important;
     transition: all 0.2s ease !important;
     width: 100%;
-    background: #0A0A0A !important;
-    border: 1px solid #222222 !important;
+    background: #0A0A0B !important;
+    border: 1px solid #222225 !important;
     color: #EEEEEE !important;
 }
 div.stButton > button:hover {
-    background: #111111 !important;
+    background: #111113 !important;
     border-color: var(--primary) !important;
     color: #FFFFFF !important;
 }
@@ -182,6 +191,7 @@ div.stButton > button:hover {
     border-radius: 16px;
     padding: 2rem;
     transition: border-color 0.2s ease;
+    backdrop-filter: blur(10px);
 }
 .collab-card:hover { 
     border-color: var(--primary); 
@@ -196,6 +206,7 @@ div.stButton > button:hover {
     text-align: center;
     min-height: 120px;
     transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
 }
 .bfeat:hover { border-color: var(--card-hover-border); transform: translateY(-3px); }
 .bfeat-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
@@ -207,8 +218,8 @@ div.stButton > button:hover {
 ::-webkit-scrollbar-thumb:hover { background: #555555; }
 
 section[data-testid="stSidebar"] {
-    border-right: 1px solid #1A1A1A !important;
-    background: #000000 !important;
+    border-right: 1px solid #1A1A1C !important;
+    background: #09090B !important;
 }
 
 .stTextInput > div > div > input,
