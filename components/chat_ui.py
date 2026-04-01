@@ -237,7 +237,9 @@ def chat_interface(mode):
                     elif mode == "flashcards": res = generate_flashcards_api(final_prompt)
                     elif mode == "quizzer":    res = generate_questions(final_prompt, previous_context)
                     elif mode == "interview":  res = interview_prep(final_prompt, "Fresher")
-                    elif mode == "resume":     res = explain_concept(final_prompt, previous_context)
+                    elif mode == "resume":     
+                        from core.resume_reviewer import review_resume
+                        res = review_resume(final_prompt, previous_context)
                     else:                      res = explain_concept(final_prompt, previous_context)
 
                     st.session_state.messages.append({"role": "assistant", "content": res})
