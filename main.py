@@ -117,11 +117,12 @@ section.main > div.block-container {
     font-weight: 800;
     letter-spacing: -1.5px;
     line-height: 1.15;
-    background: linear-gradient(180deg, #FFFFFF 0%, #888888 100%);
+    background: linear-gradient(90deg, #888888 0%, #FFFFFF 50%, #888888 100%);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.8rem;
-    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards, shimmer 5s ease-in-out infinite;
 }
 
 .hero-subtitle {
