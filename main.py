@@ -70,6 +70,13 @@ section.main > div.block-container {
     letter-spacing: 0.5px;
     margin-bottom: 1rem;
     border: 1px solid #222222;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+.hero-badge:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(94, 106, 210, 0.25);
+    color: #FFFFFF;
 }
 
 .hero-title {
@@ -122,7 +129,6 @@ section.main > div.block-container {
     transition: opacity 0.25s ease;
 }
 .fcard:hover { 
-    border-color: var(--card-hover-border); 
     transform: translateY(-4px); 
     box-shadow: 0 12px 30px rgba(0,0,0,0.8);
 }
@@ -134,6 +140,13 @@ section.main > div.block-container {
 .fcard-teal::before   { background: var(--c-teal); }
 .fcard-rose::before   { background: var(--c-rose); }
 .fcard-orange::before { background: var(--c-orange); }
+
+.fcard-blue:hover   { border-color: var(--c-blue); box-shadow: 0 12px 30px rgba(0,0,0,0.8), 0 0 20px rgba(59, 130, 246, 0.15); }
+.fcard-purple:hover { border-color: var(--c-purple); box-shadow: 0 12px 30px rgba(0,0,0,0.8), 0 0 20px rgba(139, 92, 246, 0.15); }
+.fcard-amber:hover  { border-color: var(--c-amber); box-shadow: 0 12px 30px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.15); }
+.fcard-teal:hover   { border-color: var(--c-teal); box-shadow: 0 12px 30px rgba(0,0,0,0.8), 0 0 20px rgba(20, 184, 166, 0.15); }
+.fcard-rose:hover   { border-color: var(--c-rose); box-shadow: 0 12px 30px rgba(0,0,0,0.8), 0 0 20px rgba(244, 63, 94, 0.15); }
+.fcard-orange:hover { border-color: var(--c-orange); box-shadow: 0 12px 30px rgba(0,0,0,0.8), 0 0 20px rgba(249, 115, 22, 0.15); }
 
 .fcard-blue   .fc-icon { color: var(--c-blue); }
 .fcard-purple .fc-icon { color: var(--c-purple); }
@@ -170,7 +183,10 @@ div.stButton > button:hover {
     padding: 2rem;
     transition: border-color 0.2s ease;
 }
-.collab-card:hover { border-color: var(--card-hover-border); }
+.collab-card:hover { 
+    border-color: var(--primary); 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 20px rgba(94, 106, 210, 0.1);
+}
 
 .bfeat {
     background: var(--card-bg);
@@ -205,7 +221,7 @@ section[data-testid="stSidebar"] {
 .stTextInput > div > div > input:focus,
 .stSelectbox > div > div:focus-within {
     border-color: var(--primary) !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.2) !important;
 }
 
 .stForm {
