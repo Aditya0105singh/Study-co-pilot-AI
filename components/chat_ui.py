@@ -91,6 +91,11 @@ def render_ai_response_card(response_text, selected_mode):
         font-size: 0.85rem;
         margin: 1rem 0 0.4rem;
     }}
+    @media (max-width: 768px) {{
+        .ai-card {{ padding: 1rem; margin: 0.5rem 0; border-radius: 8px; }}
+        .ai-card-header {{ font-size: 0.68rem; margin-bottom: 0.6rem; padding-bottom: 0.4rem; }}
+        .ai-section-label {{ font-size: 0.78rem; margin: 0.6rem 0 0.3rem; }}
+    }}
     </style>
     """, unsafe_allow_html=True)
 

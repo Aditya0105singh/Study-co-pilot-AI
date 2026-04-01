@@ -47,6 +47,11 @@ def pomodoro_timer():
             .pbox {{ text-align:center; background:#0A0A0A; padding:12px; border-radius:10px; border:1px solid #222222; margin:4px 0; }}
             .ptime {{ font-size:2rem; font-weight:700; letter-spacing:-1px; color:#EEEEEE; }}
             .pstatus {{ font-size:0.65rem; color:{color}; margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:1px; }}
+            @media (max-width: 480px) {{
+                .pbox {{ padding: 8px; border-radius: 8px; }}
+                .ptime {{ font-size: 1.5rem; }}
+                .pstatus {{ font-size: 0.6rem; }}
+            }}
         </style>
         </head>
         <body>

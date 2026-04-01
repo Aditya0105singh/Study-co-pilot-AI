@@ -5,6 +5,9 @@ from components.study_rooms import study_rooms_ui
 
 st.set_page_config(page_title="Student Copilot AI", page_icon="🎓", layout="wide")
 
+# Viewport meta for mobile
+st.markdown('<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">', unsafe_allow_html=True)
+
 # Debug: Check if API key is loaded
 import os
 from dotenv import load_dotenv
@@ -212,8 +215,118 @@ section[data-testid="stSidebar"] {
 }
 
 @media (max-width: 768px) {
-    .hero-title { font-size: 1.8rem; }
-    .fcard { padding: 1.2rem 1rem; }
+    /* ── Hero ── */
+    .hero-wrap { padding: 1.5rem 0.5rem 1.2rem; }
+    .hero-title { font-size: 1.6rem !important; letter-spacing: -0.5px; }
+    .hero-subtitle { font-size: 0.88rem; padding: 0 0.5rem; }
+    .hero-badge { font-size: 0.65rem; padding: 4px 12px; }
+
+    /* ── Feature cards: stack single column ── */
+    .fcard { padding: 1rem 1rem; margin-bottom: 0.3rem; }
+    .fc-icon { font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .fc-title { font-size: 0.95rem; }
+    .fc-desc { font-size: 0.8rem; }
+
+    /* ── Streamlit columns → stack on mobile ── */
+    [data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+    .stHorizontalBlock {
+        flex-wrap: wrap !important;
+        gap: 0.3rem !important;
+    }
+
+    /* ── Buttons: bigger tap targets ── */
+    div.stButton > button {
+        font-size: 0.9rem !important;
+        padding: 0.7rem 1rem !important;
+        min-height: 44px !important;
+    }
+
+    /* ── Section headers ── */
+    .section-header { font-size: 0.72rem; margin: 1.2rem 0 0.6rem; }
+
+    /* ── Collab card ── */
+    .collab-card { padding: 1.2rem; }
+
+    /* ── Bottom features ── */
+    .bfeat { padding: 1rem; min-height: auto; }
+    .bfeat-icon { font-size: 1.2rem; }
+    .bfeat-title { font-size: 0.85rem; }
+    .bfeat-desc { font-size: 0.75rem; }
+
+    /* ── Main container: reduce padding ── */
+    section.main > div.block-container {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        padding-top: 1rem !important;
+    }
+
+    /* ── Sidebar mobile: slimmer ── */
+    section[data-testid="stSidebar"] {
+        min-width: 240px !important;
+        max-width: 240px !important;
+    }
+    section[data-testid="stSidebar"] > div {
+        padding: 0.8rem 0.6rem !important;
+    }
+
+    /* ── Chat input ── */
+    [data-testid="stChatInput"] {
+        padding: 0.3rem 0.5rem !important;
+    }
+    [data-testid="stChatInput"] textarea {
+        font-size: 0.9rem !important;
+    }
+
+    /* ── Selectbox / Input ── */
+    .stSelectbox, .stTextInput {
+        font-size: 0.88rem !important;
+    }
+
+    /* ── Study Rooms: responsive cards ── */
+    .room-card { padding: 1rem; }
+    .room-code { font-size: 1.4rem; padding: 0.3rem 0.6rem; }
+
+    /* ── Chat messages ── */
+    .chat-message { padding: 0.6rem 0.8rem; }
+    .chat-sender { font-size: 0.75rem; }
+
+    /* ── AI response cards ── */
+    .ai-card { padding: 1rem; margin: 0.5rem 0; }
+    .ai-card-header { font-size: 0.7rem; }
+    .ai-section-label { font-size: 0.8rem; }
+
+    /* ── Video container ── */
+    .video-container { border-radius: 8px; }
+
+    /* ── Scrollbar: thinner on mobile ── */
+    ::-webkit-scrollbar { width: 3px; }
+}
+
+/* ── Small phones (< 480px) ── */
+@media (max-width: 480px) {
+    .hero-title { font-size: 1.35rem !important; }
+    .hero-subtitle { font-size: 0.82rem; }
+    .fcard { padding: 0.8rem; border-radius: 10px; }
+    .fc-icon { font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .fc-title { font-size: 0.88rem; }
+    .fc-desc { font-size: 0.75rem; }
+
+    div.stButton > button {
+        font-size: 0.85rem !important;
+        padding: 0.65rem 0.8rem !important;
+    }
+
+    section.main > div.block-container {
+        padding-left: 0.3rem !important;
+        padding-right: 0.3rem !important;
+    }
+
+    .collab-card { padding: 0.8rem; }
+    .room-code { font-size: 1.2rem; }
 }
 </style>
 """, unsafe_allow_html=True)
