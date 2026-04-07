@@ -1,6 +1,8 @@
 # ✦ Student Copilot AI
 **An Intelligent, All-in-One Study Suite for Modern Learners**
 
+🚀 **[Try the Live Application Here!](https://study-co-pilot-ai-9hqbmaev2ha7r3vqkmyvfv.streamlit.app/)**
+
 ![Student Copilot AI Hero](/public/hero.png) <!-- Replace with an actual screenshot path later -->
 
 Student Copilot AI is a premium, AI-powered educational application built with **Streamlit** and heavily customized with modern CSS/SaaS-like aesthetics. It brings the power of state-of-the-art LLMs (Gemini, Groq, and Grok) into a single, cohesive interface designed to help students learn faster, prepare for exams, and ace their interviews.
