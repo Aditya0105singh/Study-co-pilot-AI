@@ -9,8 +9,7 @@ from core.quizzer import (
 from core.interview import interview_prep
 from core.visualizer import generate_visual
 from core.flashcards import generate_flashcards_api
-from components.pdf_handler import handle_pdf_upload
-from components.resume_handler import handle_resume_upload
+from core.resume_reviewer import review_resume
 from utils.logger import log_usage
 import re
 import streamlit.components.v1 as components
@@ -174,8 +173,7 @@ def render_flashcards(response_text):
 
 def chat_interface(mode):
     """Unified chat interface."""
-    pdf_content = handle_pdf_upload()
-    st.markdown("---")
+    pdf_content = st.session_state.get("pdf_content")
 
     placeholders = {
         "explainer":  "What concept should we break down?",

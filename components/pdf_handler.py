@@ -14,19 +14,19 @@ def extract_pdf_text(uploaded_file):
         return ""
 
 def handle_pdf_upload():
-    """Universal PDF upload handler that stores content in session state."""
-    with st.expander("📚 Upload Study Material (PDF) for AI Context", expanded=False):
-        uploaded_file = st.file_uploader("Upload your notes, slides, or chapters", type=["pdf"], key="universal_pdf_uploader")
+    """Universal PDF upload handler that renders in the sidebar."""
+    with st.sidebar.expander("📚 Upload Study Material (PDF)", expanded=False):
+        uploaded_file = st.file_uploader("Upload notes or chapters", type=["pdf"], key="universal_pdf_uploader")
         
         if uploaded_file:
             if st.session_state.get("last_pdf_name") != uploaded_file.name:
-                with st.spinner("Extracting text from PDF..."):
+                with st.spinner("Extracting text..."):
                     text = extract_pdf_text(uploaded_file)
                     st.session_state["pdf_content"] = text
                     st.session_state["last_pdf_name"] = uploaded_file.name
-                st.success(f"✅ Loaded: {uploaded_file.name} ({len(text)} chars)")
+                st.success(f"✅ Loaded: {uploaded_file.name}")
             
-            if st.button("🗑️ Clear PDF Context", use_container_width=True):
+            if st.button("🗑️ Clear PDF", use_container_width=True):
                 st.session_state["pdf_content"] = None
                 st.session_state["last_pdf_name"] = None
                 st.rerun()

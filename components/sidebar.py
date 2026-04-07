@@ -19,11 +19,12 @@ def sidebar_ui():
     """, unsafe_allow_html=True)
 
     # Only show models that have a valid API key in .env
+    # We put Groq first so it's the default, since it has much higher free limits (14,400 req/day)
     available_models = []
-    if os.getenv("GEMINI_API_KEY"):
-        available_models.append("Gemini")
     if os.getenv("GROQ_API_KEY"):
         available_models.append("Groq (Free)")
+    if os.getenv("GEMINI_API_KEY"):
+        available_models.append("Gemini")
     if os.getenv("XAI_API_KEY"):
         available_models.append("Grok (xAI)")
 
@@ -47,15 +48,14 @@ def sidebar_ui():
     </div>
     """, unsafe_allow_html=True)
 
-    # PDF Context indicator
-    if st.session_state.get("pdf_content"):
-        pdf_name = st.session_state.get('last_pdf_name', 'Document')
-        st.sidebar.markdown(f"""
-        <div style="background: rgba(33, 136, 255, 0.05); border: 1px solid rgba(33, 136, 255, 0.2); border-radius: 8px; padding: 8px 12px; margin: 8px 0;">
-            <div style="font-size: 0.65rem; color: rgba(33, 136, 255, 0.9); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">📎 Document Loaded</div>
-            <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{pdf_name}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    from components.pdf_handler import handle_pdf_upload
+    
+    st.sidebar.markdown("---")
+    
+    # Universal PDF Uploader
+    handle_pdf_upload()
+    
+    st.sidebar.markdown("---")
 
     # Focus Tool
     pomodoro_timer()

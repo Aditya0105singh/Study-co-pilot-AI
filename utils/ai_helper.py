@@ -2,7 +2,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
-import google.generativeai as genai
+from google import genai
 import warnings
 import time
 from pathlib import Path
@@ -26,13 +26,12 @@ def try_gemini(prompt: str):
     api_key = get_api_key("GEMINI_API_KEY")
     if not api_key: return None, "❌ Gemini API Key missing"
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(
-            prompt,
-            request_options={"timeout": 30}
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
         )
-        if response and hasattr(response, "text"):
+        if response and response.text:
             return response.text.strip(), None
         return None, "⚠️ Gemini: Empty response"
     except Exception as e:
@@ -79,10 +78,10 @@ def generate_response(prompt: str) -> str:
         "Grok":       try_grok,
     }
 
-    primary_choice = st.session_state.get("api_choice", "Gemini")
+    primary_choice = st.session_state.get("api_choice", "Groq (Free)")
 
     # Try primary choice first
-    gen_fn = generators.get(primary_choice, try_gemini)
+    gen_fn = generators.get(primary_choice, try_groq)
     res, err = gen_fn(prompt)
     if res:
         return res
@@ -90,8 +89,8 @@ def generate_response(prompt: str) -> str:
     # If primary fails, log the error and try others as fallback
     st.toast(f"Fallback: {primary_choice} failed. Trying backup...", icon="⚠️")
 
-    # Fallback order
-    fallback_order = ["Gemini", "Groq (Free)", "Grok (xAI)"]
+    # Fallback order — Groq first (14,400 req/day free), then Gemini, then Grok
+    fallback_order = ["Groq (Free)", "Gemini", "Grok (xAI)"]
     for model_name in fallback_order:
         if model_name == primary_choice:
             continue
