@@ -3,7 +3,7 @@ from components.sidebar import sidebar_ui
 from components.chat_ui import chat_interface
 from components.study_rooms import study_rooms_ui
 
-st.set_page_config(page_title="Student Copilot AI", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="Student Copilot AI", page_icon="✦", layout="wide")
 
 # Viewport meta for mobile
 st.markdown('<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">', unsafe_allow_html=True)

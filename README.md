@@ -1,4 +1,4 @@
-# 🎓 Student Copilot AI
+# ✦ Student Copilot AI
 **An Intelligent, All-in-One Study Suite for Modern Learners**
 
 ![Student Copilot AI Hero](/public/hero.png) <!-- Replace with an actual screenshot path later -->
