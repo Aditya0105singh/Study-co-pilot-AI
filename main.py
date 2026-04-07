@@ -417,7 +417,7 @@ section[data-testid="stSidebar"] {
 /* ── Premium Streamlit Hiding ── */
 #MainMenu {visibility: hidden;}
 .stAppDeployButton {display: none;}
-header {visibility: hidden;}
+[data-testid="stHeader"] {background: transparent !important;}
 footer {visibility: hidden;}
 
 /* ── Custom Chat Speech Bubbles ── */
