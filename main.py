@@ -20,11 +20,15 @@ defaults = {
     "answer_style": "Beginner Friendly", "in_study_room": False,
     "current_room": None, "user_name": "", "rooms": {},
     "room_messages": [], "join_code_from_home": "",
-    "camera_enabled": True, "mic_enabled": True
+    "camera_enabled": True, "mic_enabled": True, "welcomed": False
 }
 for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
+
+if not st.session_state.welcomed:
+    st.toast("Welcome back! AI engines are initialized & ready.", icon="🚀")
+    st.session_state.welcomed = True
 
 # ─────────────────────────────────────────────────────────────
 # DESIGN SYSTEM — "Premium Light"
@@ -399,6 +403,45 @@ section[data-testid="stSidebar"] {
     .collab-card { padding: 0.8rem; }
     .room-code { font-size: 1.2rem; }
 }
+
+/* ── Premium Streamlit Hiding ── */
+#MainMenu {visibility: hidden;}
+.stAppDeployButton {display: none;}
+header {visibility: hidden;}
+footer {visibility: hidden;}
+
+/* ── Custom Chat Speech Bubbles ── */
+[data-testid="stChatMessage"] {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0.5rem 0 !important;
+}
+
+/* Assistant Messages */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) .stMarkdown {
+    background: linear-gradient(145deg, rgba(94, 106, 210, 0.08) 0%, rgba(30, 30, 40, 0) 100%) !important;
+    border-left: 3px solid var(--primary);
+    border-radius: 4px 16px 16px 16px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* User Messages */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+    flex-direction: row-reverse;
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) .stMarkdown {
+    background-color: #212124 !important;
+    border: 1px solid #333333;
+    border-radius: 16px 16px 4px 16px;
+    padding: 0.8rem 1.2rem;
+    display: inline-block;
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="chatAvatarIcon-user"] {
+    margin-left: 1rem;
+    margin-right: 0;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
