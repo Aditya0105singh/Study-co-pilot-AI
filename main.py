@@ -212,7 +212,7 @@ div.stButton > button {
     font-weight: 500 !important;
     font-size: 0.85rem !important;
     padding: 0.55rem 1.2rem !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
     width: 100%;
     background: #0A0A0B !important;
     border: 1px solid #222225 !important;
@@ -222,6 +222,8 @@ div.stButton > button:hover {
     background: #111113 !important;
     border-color: var(--primary) !important;
     color: #FFFFFF !important;
+    box-shadow: 0 0 14px rgba(94, 106, 210, 0.3) !important;
+    transform: translateY(-1px) !important;
 }
 
 .collab-card {
@@ -247,9 +249,12 @@ div.stButton > button:hover {
     transition: all 0.2s ease;
     backdrop-filter: blur(10px);
 }
-.bfeat:hover { border-color: var(--card-hover-border); transform: translateY(-3px); }
-.bfeat-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
-.bfeat-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem; color: #EEEEEE; }
+.bfeat:hover { border-color: var(--card-hover-border); transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
+.bfeat-icon { margin-bottom: 0.5rem; display: flex; justify-content: center; }
+.bfeat-icon svg { width: 28px; height: 28px; stroke-width: 1.5; color: var(--text-muted); transition: color 0.3s, filter 0.3s; }
+.bfeat:hover .bfeat-icon svg { color: var(--primary); filter: drop-shadow(0 0 4px var(--primary)); }
+.bfeat-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem; color: #EEEEEE; transition: color 0.3s; }
+.bfeat:hover .bfeat-title { color: #FFFFFF; }
 .bfeat-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
 
 ::-webkit-scrollbar { width: 5px; }
@@ -483,10 +488,13 @@ def show_home():
 
     room_col1, room_col2 = st.columns([2, 1])
 
+    # Interconnected users SVG for collab
+    svg_collab = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5E6AD2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 6px rgba(94, 106, 210, 0.5)); margin-bottom: 0.6rem;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+
     with room_col1:
-        st.markdown("""
+        st.markdown(f"""
         <div class="collab-card">
-            <div style="font-size: 2rem; margin-bottom: 0.6rem;">👥</div>
+            {svg_collab}
             <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.4rem;">Study Rooms</div>
             <div style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5;">
                 Create or join a live study room with video, audio, and group chat.
@@ -515,11 +523,16 @@ def show_home():
     st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
     st.markdown('<div class="section-header">Platform Capabilities</div>', unsafe_allow_html=True)
 
+    # SVGs for Bottom features
+    svg_cpu = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>'
+    svg_doc = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>'
+    svg_layers = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>'
+
     bcols = st.columns(3, gap="medium")
     bottom_features = [
-        ("🤖", "Multi-Model AI",     "Gemini, Groq, and Grok — automatic fallback for reliability."),
-        ("📎", "PDF Context",         "Upload documents once, reference them across every tool."),
-        ("🌙", "Universal UI",        "Clean interface that auto-adapts to Light & Dark Modes."),
+        (svg_cpu,    "Multi-Model AI",     "Gemini, Groq, and Grok — automatic fallback for reliability."),
+        (svg_doc,    "PDF Context",         "Upload documents once, reference them across every tool."),
+        (svg_layers, "Universal UI",        "Clean interface that auto-adapts to Light & Dark Modes."),
     ]
     for i, (icon, title, desc) in enumerate(bottom_features):
         with bcols[i]:
