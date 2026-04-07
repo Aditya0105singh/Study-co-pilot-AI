@@ -178,12 +178,22 @@ def chat_interface(mode):
     placeholders = {
         "explainer":  "What concept should we break down?",
         "visualizer": "Describe a system or concept to visualize…",
-        "flashcards": "Topic or chapter to create flashcards for…",
-        "quizzer":    "Subject or topic for practice questions…",
-        "interview":  "Role and company you're preparing for…",
-        "resume":     "Paste your resume or describe your experience…"
+        "flashcards": "Paste text or a topic to generate flashcards…",
+        "quizzer":    "What topic should we test your knowledge on?",
+        "interview":  "What role are you interviewing for?",
+        "resume":     "Paste your resume text or ask for feedback…"
     }
-    placeholder = placeholders.get(mode, "Ask anything…")
+    placeholder = placeholders.get(mode, "Type your message here...")
+
+    if not st.session_state.messages:
+        # Empty State UI
+        st.markdown(f"""
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 40vh; opacity: 0.5; text-align: center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <h3 style="margin: 0; font-weight: 500;">Ready when you are</h3>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">{placeholder}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     # Render history
     for msg in st.session_state.messages:

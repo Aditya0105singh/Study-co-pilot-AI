@@ -596,12 +596,9 @@ def show_mode_interface():
 
     # Back button
     col1, col2, col3 = st.columns([1, 6, 1])
-    with col1:
-        def go_back():
-            st.session_state.current_mode = None
-            st.session_state.messages = []
-            
-        st.button("← Back", use_container_width=True, on_click=go_back)
+    def go_back():
+        st.session_state.current_mode = None
+        st.session_state.messages = []
 
     mode_titles = {
         "explainer":  (GLOBAL_SVG_BRAIN, "Study & Understand", "var(--c-blue)"),
@@ -614,20 +611,30 @@ def show_mode_interface():
 
     mdata = mode_titles.get(mode, ('', 'Study Mode', 'var(--primary)'))
     
-    st.markdown(f"""
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
-        <div style="color: {mdata[2]}; display: flex; filter: drop-shadow(0 0 6px {mdata[2]}); opacity: 0.9;">
-            {mdata[0]}
+    # Header Row: Back Button + Title
+    col_back, col_title = st.columns([1, 15], vertical_alignment="center")
+    with col_back:
+        st.button("❮ ", use_container_width=True, on_click=go_back, help="Back to Dashboard")
+    
+    with col_title:
+        st.markdown(f"""
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="color: {mdata[2]}; display: flex; filter: drop-shadow(0 0 6px {mdata[2]}); opacity: 0.9;">
+                {mdata[0]}
+            </div>
+            <h2 style="margin: 0; padding: 0; border: none; letter-spacing: -0.5px;">{mdata[1]}</h2>
         </div>
-        <h2 style="margin: 0; padding: 0; border: none; letter-spacing: -0.5px;">{mdata[1]}</h2>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+        
+    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
-    st.session_state.answer_style = st.selectbox(
-        "Answer Style",
+    # Clean horizontal configuration
+    st.session_state.answer_style = st.radio(
+        "Response Depth",
         ["Beginner Friendly", "Intermediate", "Advanced/Technical"],
         index=0,
-        help="Choose how detailed and technical you want the responses to be"
+        horizontal=True,
+        help="Adjust the complexity and depth of the AI's response."
     )
 
     st.markdown("---")
