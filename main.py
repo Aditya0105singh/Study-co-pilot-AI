@@ -202,7 +202,8 @@ div[data-testid="column"]:nth-child(3) .fcard { animation-delay: 0.3s; }
 .fcard-rose   .fc-icon { color: var(--c-rose); }
 .fcard-orange .fc-icon { color: var(--c-orange); }
 
-.fc-icon { font-size: 1.6rem; margin-bottom: 0.8rem; display: block; }
+.fc-icon { margin-bottom: 0.8rem; display: block; }
+.fc-icon svg { width: 32px; height: 32px; stroke-width: 1.5; filter: drop-shadow(0 0 5px currentColor); }
 .fc-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; color: #EEEEEE; }
 .fc-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; }
 
@@ -425,14 +426,22 @@ def show_home():
 
     st.markdown('<div class="section-header">Choose a Tool</div>', unsafe_allow_html=True)
 
+    # Crisp, minimalist SVG icons for an AI SaaS aesthetic
+    svg_brain = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>'
+    svg_nodes = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="14" y="3" rx="1"/><path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3"/></svg>'
+    svg_target = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>'
+    svg_zap = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>'
+    svg_bot = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="14" x="3" y="7" rx="2" ry="2"/><path d="M12 7V3"/><path d="M15 3h-6"/><path d="M9 13h.01"/><path d="M15 13h.01"/><path d="M10 17h4"/></svg>'
+    svg_sparkle = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>'
+
     # Card data: (icon, title, desc, mode_key, color_class)
     cards = [
-        ("🧠", "Study & Understand",  "Deep explanations with structured breakdowns and examples.",    "explainer",  "fcard-blue"),
-        ("📊", "Visualize Concepts",  "Auto-generate flowcharts, mind maps, and system diagrams.",     "visualizer",  "fcard-purple"),
-        ("📝", "Exam Preparation",    "Practice questions, mock tests, and instant evaluation.",        "quizzer",    "fcard-amber"),
-        ("⚡", "Flashcards",          "Spaced repetition cards generated from any topic or PDF.",       "flashcards", "fcard-teal"),
-        ("💼", "Interview Practice",  "Role-specific behavioral and technical interview prep.",         "interview",  "fcard-rose"),
-        ("📄", "Resume Review",       "AI critique of your resume with actionable improvements.",       "resume",     "fcard-orange"),
+        (svg_brain,   "Study & Understand",  "Deep explanations with structured breakdowns and examples.",    "explainer",  "fcard-blue"),
+        (svg_nodes,   "Visualize Concepts",  "Auto-generate flowcharts, mind maps, and system diagrams.",     "visualizer",  "fcard-purple"),
+        (svg_target,  "Exam Preparation",    "Practice questions, mock tests, and instant evaluation.",        "quizzer",    "fcard-amber"),
+        (svg_zap,     "Flashcards",          "Spaced repetition cards generated from any topic or PDF.",       "flashcards", "fcard-teal"),
+        (svg_bot,     "Interview Practice",  "Role-specific behavioral and technical interview prep.",         "interview",  "fcard-rose"),
+        (svg_sparkle, "Resume Review",       "AI critique of your resume with actionable improvements.",       "resume",     "fcard-orange"),
     ]
 
     def handle_btn_click(mode):
