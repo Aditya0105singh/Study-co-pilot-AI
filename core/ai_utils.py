@@ -77,12 +77,23 @@ _FAST_KEYWORDS = ("define", "what is", "list", "who")
 _DEEP_KEYWORDS = ("explain", "why", "compare", "analyze", "step by step", "derive")
 
 
+def _extract_user_text(query: str) -> str:
+    """If the prompt is wrapped with PDF/conversation context, score only the
+    real user line. chat_ui formats prompts as `... \nUser: <real prompt>`."""
+    if not query:
+        return ""
+    if "\nUser:" in query:
+        return query.rsplit("\nUser:", 1)[-1].strip()
+    return query.strip()
+
+
 def score_complexity(query: str) -> str:
     """Pick which LLM should answer this query."""
-    if not query or not query.strip():
+    real = _extract_user_text(query)
+    if not real:
         return "groq"
 
-    q = query.lower().strip()
+    q = real.lower()
     word_count = len(q.split())
 
     if word_count < 8:
@@ -247,31 +258,65 @@ def stream_groq(prompt: str, history: Optional[Iterable[dict]] = None) -> Genera
 # ---------------------------------------------------------------------------
 # Main router
 # ---------------------------------------------------------------------------
+_QUOTA_PATTERNS = (
+    "RESOURCE_EXHAUSTED",
+    "quota exceeded",
+    "exceeded your current quota",
+    "429",
+    "rate limit",
+    "Please retry in",
+)
+
+
+def _looks_like_quota_error(text: str) -> bool:
+    if not text:
+        return False
+    lower = text.lower()
+    return any(p.lower() in lower for p in _QUOTA_PATTERNS)
+
+
+def _drain(stream_fn, prompt, history, placeholder) -> List[str]:
+    out: List[str] = []
+    try:
+        for piece in stream_fn(prompt, history=history):
+            out.append(piece)
+            placeholder.markdown("".join(out))
+    except Exception as e:
+        out.append(f"\n\nStreaming error: {e}")
+        placeholder.markdown("".join(out))
+    return out
+
+
 def get_streamed_response(
     prompt: str,
     history: Optional[Iterable[dict]] = None,
     force_model: Optional[str] = None,
 ) -> str:
-    """Pick a model, stream the response, render a badge, update token stats."""
+    """Pick a model, stream the response, render a badge, update token stats.
+
+    Falls back from Gemini -> Groq automatically on quota / 429 errors, so a
+    dead free-tier Gemini key never strands the user."""
     model = force_model if force_model in ("groq", "gemini") else score_complexity(prompt)
 
     placeholder = st.empty()
     start = time.time()
-    chunks: List[str] = []
 
     stream_fn = stream_groq if model == "groq" else stream_gemini
-
-    try:
-        for piece in stream_fn(prompt, history=history):
-            chunks.append(piece)
-            placeholder.markdown("".join(chunks))
-    except Exception as e:
-        chunks.append(f"\n\nStreaming error: {e}")
-        placeholder.markdown("".join(chunks))
-
-    latency_ms = (time.time() - start) * 1000.0
+    chunks = _drain(stream_fn, prompt, history, placeholder)
     response_text = "".join(chunks)
 
+    # Auto-fallback: Gemini quota hit -> retry on Groq
+    if model == "gemini" and _looks_like_quota_error(response_text) and groq_client is not None:
+        try:
+            st.toast("Gemini quota hit — falling back to Groq", icon="⚡")
+        except Exception:
+            pass
+        placeholder.markdown("")
+        chunks = _drain(stream_groq, prompt, history, placeholder)
+        response_text = "".join(chunks)
+        model = "groq"
+
+    latency_ms = (time.time() - start) * 1000.0
     show_model_badge(model, latency_ms)
 
     input_tokens = len(prompt.split()) if prompt else 0
