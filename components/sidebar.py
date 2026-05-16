@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import json
 from dotenv import load_dotenv
 from pathlib import Path
 from components.pomodoro import pomodoro_timer
@@ -7,6 +8,7 @@ from components.pomodoro import pomodoro_timer
 # Load .env so we can check which keys exist
 _env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=_env_path)
+
 
 def sidebar_ui():
     """Sidebar with model selector and tools - Premium Dark theme."""
@@ -34,6 +36,8 @@ def sidebar_ui():
         available_models.append("Gemini")
     if os.getenv("XAI_API_KEY"):
         available_models.append("Grok (xAI)")
+    # Auto-routing pseudo-engine that uses both Groq + Gemini via core.ai_utils
+    available_models.insert(0, "Auto (Dual-LLM)")
 
     if not available_models:
         available_models = ["Gemini"]  # fallback label
@@ -42,12 +46,26 @@ def sidebar_ui():
         "AI Engine",
         available_models,
         index=0,
-        help="Only models with valid API keys are shown"
+        help="Auto routes each query to Groq or Gemini based on complexity. Choose a single engine to force it.",
+    )
+
+    # Streaming toggle (drives the streaming path in chat_ui)
+    st.session_state.streaming_enabled = st.sidebar.toggle(
+        "⚡ Streaming responses",
+        value=st.session_state.get("streaming_enabled", True),
+        help="Stream tokens live instead of waiting for the full answer.",
     )
 
     # Model badge
-    model_map = {"Gemini": ("Gemini 2.0 Flash", "rgba(33, 136, 255, 0.9)"), "Groq (Free)": ("Llama-3.3", "rgba(0, 176, 155, 0.9)"), "Grok (xAI)": ("Grok-2", "rgba(129, 98, 250, 0.9)")}
-    model_name, model_color = model_map.get(st.session_state.api_choice, ("Unknown", "rgba(128,128,128,0.8)"))
+    model_map = {
+        "Gemini": ("Gemini 2.0 Flash", "rgba(33, 136, 255, 0.9)"),
+        "Groq (Free)": ("Llama-3.3", "rgba(0, 176, 155, 0.9)"),
+        "Grok (xAI)": ("Grok-2", "rgba(129, 98, 250, 0.9)"),
+        "Auto (Dual-LLM)": ("Groq + Gemini", "rgba(245, 80, 54, 0.9)"),
+    }
+    model_name, model_color = model_map.get(
+        st.session_state.api_choice, ("Unknown", "rgba(128,128,128,0.8)")
+    )
     st.sidebar.markdown(f"""
     <div style="background: #0A0A0A; border: 1px solid #222222; border-radius: 8px; padding: 8px 12px; margin: 8px 0;">
         <div style="font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Active Model</div>
@@ -61,6 +79,41 @@ def sidebar_ui():
 
     # Universal PDF Uploader
     handle_pdf_upload()
+
+    # Voice input (Groq Whisper)
+    if os.getenv("GROQ_API_KEY"):
+        with st.sidebar.expander("🎙️ Voice input", expanded=False):
+            try:
+                from components.voice_input import voice_to_text
+                spoken = voice_to_text(key="sidebar_voice")
+                if spoken:
+                    st.session_state.voice_prompt = spoken
+                    st.toast("Voice captured — sent to chat input.", icon="🎤")
+            except Exception as e:
+                st.caption(f"Voice unavailable: {e}")
+
+    # Session import
+    with st.sidebar.expander("💾 Sessions", expanded=False):
+        uploaded = st.file_uploader("Load saved session (.json)", type=["json"], key="session_loader")
+        if uploaded is not None:
+            try:
+                from utils.session_export import import_chat_from_json
+                msgs = import_chat_from_json(uploaded)
+                if msgs:
+                    st.session_state.messages = msgs
+                    st.success(f"Loaded {len(msgs)} messages.")
+                else:
+                    st.warning("File did not contain a valid session.")
+            except Exception as e:
+                st.warning(f"Could not load session: {e}")
+
+        if st.button("🧹 Clear current chat", key="sidebar_clear_chat", use_container_width=True):
+            st.session_state.messages = []
+            for k in list(st.session_state.keys()):
+                if isinstance(k, str) and k.startswith(("_pending_", "_feedback_done_")):
+                    del st.session_state[k]
+            st.toast("Chat cleared.", icon="🧼")
+            st.rerun()
 
     st.sidebar.markdown("---")
 
