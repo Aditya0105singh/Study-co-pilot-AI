@@ -327,13 +327,24 @@ def render_room_interface():
         audio_constraint = st.session_state.get("mic_enabled", True)
 
         if not _WEBRTC_AVAILABLE:
-            st.warning(
-                "🎥 Video conferencing is temporarily unavailable in this deployment. "
-                "Chat, notes, and PDFs still work."
-            )
-            if _WEBRTC_ERROR:
-                with st.expander("Details"):
-                    st.code(_WEBRTC_ERROR)
+            st.markdown("""
+            <div style="
+                background: linear-gradient(135deg, rgba(124,132,232,0.10), rgba(45,212,191,0.06));
+                border: 1px dashed rgba(124,132,232,0.30);
+                border-radius: 14px;
+                padding: 28px 24px;
+                text-align: center;
+                margin: 8px 0 18px;
+            ">
+                <div style="font-size: 2rem; margin-bottom: 6px; opacity: 0.85;">📹</div>
+                <div style="font-size: 1rem; font-weight: 600; color: var(--ink-100, #F4F5FA); margin-bottom: 4px;">
+                    Video calls — coming soon
+                </div>
+                <div style="font-size: 0.86rem; color: var(--ink-50, #8A8C99); line-height: 1.5; max-width: 380px; margin: 0 auto;">
+                    Group chat, notes, PDFs, and AI tools all work in this room — share the join code with friends and study together.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             webrtc_ctx = None
         else:
             webrtc_ctx = webrtc_streamer(
