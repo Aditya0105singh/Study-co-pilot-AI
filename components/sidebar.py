@@ -64,9 +64,21 @@ def sidebar_ui():
         st.session_state.api_choice, ("Unknown", "rgba(128,128,128,0.8)")
     )
     st.sidebar.markdown(f"""
-    <div style="background: #0A0A0A; border: 1px solid #222222; border-radius: 8px; padding: 8px 12px; margin: 8px 0;">
-        <div style="font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Active Model</div>
-        <div style="font-size: 0.85rem; color: {model_color}; font-weight: 500; margin-top: 2px;">+ {model_name}</div>
+    <div style="
+        background: var(--bg-2, #11121A);
+        border: 1px solid var(--line, #1E1F2A);
+        border-radius: 10px;
+        padding: 9px 12px;
+        margin: 8px 0 4px;
+        display: flex; align-items: center; gap: 10px;">
+        <div style="
+            width: 8px; height: 8px; border-radius: 50%;
+            background: {model_color};
+            box-shadow: 0 0 8px {model_color};"></div>
+        <div style="flex:1;">
+            <div style="font-size: 0.62rem; color: var(--ink-50, #8A8C99); text-transform: uppercase; letter-spacing: 1.4px; font-weight: 600;">Active Model</div>
+            <div style="font-size: 0.86rem; color: var(--ink-100, #F4F5FA); font-weight: 600; margin-top: 1px;">{model_name}</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 

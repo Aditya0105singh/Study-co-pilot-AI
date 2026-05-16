@@ -71,32 +71,46 @@ def render_ai_response_card(response_text, selected_mode):
     st.markdown(f"""
     <style>
     .ai-card {{
-        background: rgba(128,128,128,0.05);
-        border: 1px solid rgba(128,128,128,0.2);
+        background: linear-gradient(180deg,
+            color-mix(in srgb, {accent} 6%, var(--bg-2, #11121A)) 0%,
+            var(--bg-1, #0C0C12) 100%);
+        border: 1px solid var(--line, #1E1F2A);
         border-left: 3px solid {accent};
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 14px;
+        padding: 1.4rem 1.5rem;
         margin: 1rem 0;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.30);
     }}
     .ai-card-header {{
-        font-size: 0.75rem;
-        font-weight: 600;
+        font-size: 0.72rem;
+        font-weight: 700;
         color: {accent};
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 1rem;
-        padding-bottom: 0.6rem;
-        border-bottom: 1px solid rgba(128,128,128,0.2);
+        letter-spacing: 1.6px;
+        margin-bottom: 0.9rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--line, #1E1F2A);
+        display: flex; align-items: center; gap: 8px;
     }}
     .ai-section-label {{
         color: {accent};
         font-weight: 600;
-        font-size: 0.85rem;
-        margin: 1rem 0 0.4rem;
+        font-size: 0.82rem;
+        letter-spacing: 0.3px;
+        margin: 0.9rem 0 0.35rem;
+        opacity: 0.9;
+    }}
+    .ai-card p, .ai-card li {{ color: var(--ink-100, #F4F5FA); line-height: 1.62; }}
+    .ai-card code {{
+        background: rgba(124,132,232,0.10);
+        border: 1px solid rgba(124,132,232,0.20);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 0.86em;
     }}
     @media (max-width: 768px) {{
-        .ai-card {{ padding: 1rem; margin: 0.5rem 0; border-radius: 8px; }}
-        .ai-card-header {{ font-size: 0.68rem; margin-bottom: 0.6rem; padding-bottom: 0.4rem; }}
+        .ai-card {{ padding: 1rem; margin: 0.5rem 0; border-radius: 10px; }}
+        .ai-card-header {{ font-size: 0.66rem; margin-bottom: 0.6rem; padding-bottom: 0.4rem; letter-spacing: 1.2px; }}
         .ai-section-label {{ font-size: 0.78rem; margin: 0.6rem 0 0.3rem; }}
     }}
     </style>
@@ -141,7 +155,7 @@ def sanitize_mermaid(code):
 def render_mermaid(code):
     code = sanitize_mermaid(code)
     html_code = f"""
-    <div style="background:rgba(128,128,128,0.05); padding:20px; border-radius:12px; border:1px solid rgba(128,128,128,0.2); margin:1rem 0;">
+    <div style="background:var(--bg-2, #11121A); padding:20px; border-radius:14px; border:1px solid var(--line, #1E1F2A); margin:1rem 0; box-shadow:0 4px 18px rgba(0,0,0,0.3);">
         <pre class="mermaid" style="text-align:center;">{code}</pre>
     </div>
     <script type="module">
