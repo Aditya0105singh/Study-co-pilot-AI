@@ -417,6 +417,55 @@ hr { border-color: var(--line) !important; }
     .collab-card { padding: 20px; }
     .mode-head h2 { font-size: 1.3rem; }
 }
+
+/* — Card depth polish — */
+.fcard {
+    background:
+        radial-gradient(120% 80% at 0% 0%, rgba(124,132,232,0.10) 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 24px rgba(0,0,0,0.35) !important;
+}
+.fcard:hover {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 14px 40px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(124,132,232,0.22) !important;
+}
+.fc-icon {
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.03),
+        0 6px 18px rgba(0,0,0,0.35);
+}
+.fc-blue   .fc-icon { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 6px 18px rgba(96,165,250,0.20); }
+.fc-purple .fc-icon { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 6px 18px rgba(167,139,250,0.20); }
+.fc-amber  .fc-icon { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 6px 18px rgba(251,191,36,0.18); }
+.fc-teal   .fc-icon { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 6px 18px rgba(45,212,191,0.20); }
+.fc-rose   .fc-icon { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 6px 18px rgba(251,113,133,0.20); }
+.fc-orange .fc-icon { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 6px 18px rgba(251,146,60,0.20); }
+
+/* Tighter CTA buttons under cards */
+.stButton > button {
+    font-size: 0.82rem !important;
+    padding: 8px 14px !important;
+    letter-spacing: 0.3px !important;
+}
+.stButton > button:hover {
+    background: rgba(124,132,232,0.22) !important;
+    box-shadow: 0 6px 18px rgba(124,132,232,0.20) !important;
+}
+
+/* Section header — slightly bigger label */
+.section-h h3 { font-size: 0.74rem; letter-spacing: 2.4px; }
+.section-h .line { background: linear-gradient(90deg, rgba(124,132,232,0.20) 0%, transparent 80%); }
+
+/* Engine pills — a bit larger and slightly stronger contrast */
+.epill { padding: 5px 11px; font-size: 0.74rem; }
+
+/* Hero subtitle line-height */
+.hero-subtitle { line-height: 1.6; }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -523,7 +572,7 @@ def show_home():
                 </div>
                 """, unsafe_allow_html=True)
                 st.button(
-                    f"Open {title.split()[0]}  →",
+                    f"Open  →",
                     key=f"open_{mode_key}",
                     on_click=_go_mode,
                     args=(mode_key,),
@@ -615,7 +664,7 @@ def show_mode_interface():
     )
 
     # Top bar: back button + title + engine pills
-    top1, top2, top3 = st.columns([1, 12, 4], vertical_alignment="center")
+    top1, top2, top3 = st.columns([2, 14, 5], vertical_alignment="center")
     with top1:
         st.button("← Home", on_click=_go_home, use_container_width=True, key="mode_back")
     with top2:
