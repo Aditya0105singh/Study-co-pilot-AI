@@ -1,19 +1,35 @@
 import streamlit as st
 import uuid
 from datetime import datetime
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
+# WebRTC is optional. On Python 3.14 the streamlit-webrtc + tornado combo
+# breaks at import time (BaseAsyncIOLoop moved). Guard the import so a
+# failure here does not take the whole app down on Streamlit Cloud.
+try:
+    from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration  # type: ignore
+    _WEBRTC_AVAILABLE = True
+    _WEBRTC_ERROR = None
+except Exception as _e:  # noqa: BLE001
+    webrtc_streamer = None  # type: ignore
+    WebRtcMode = None  # type: ignore
+    RTCConfiguration = None  # type: ignore
+    _WEBRTC_AVAILABLE = False
+    _WEBRTC_ERROR = str(_e)
 
 
 # TURN/STUN servers for WebRTC connectivity
-RTC_CONFIGURATION = RTCConfiguration({
-    "iceServers": [
-        {"urls": ["stun:stun.l.google.com:19302"]},
-        {"urls": ["stun:stun1.l.google.com:19302"]},
-        {"urls": ["stun:stun2.l.google.com:19302"]},
-        {"urls": ["stun:stun3.l.google.com:19302"]},
-        {"urls": ["stun:stun4.l.google.com:19302"]},
-    ]
-})
+RTC_CONFIGURATION = (
+    RTCConfiguration({
+        "iceServers": [
+            {"urls": ["stun:stun.l.google.com:19302"]},
+            {"urls": ["stun:stun1.l.google.com:19302"]},
+            {"urls": ["stun:stun2.l.google.com:19302"]},
+            {"urls": ["stun:stun3.l.google.com:19302"]},
+            {"urls": ["stun:stun4.l.google.com:19302"]},
+        ]
+    })
+    if _WEBRTC_AVAILABLE
+    else None
+)
 
 
 def generate_room_code():
@@ -309,22 +325,32 @@ def render_room_interface():
         # WebRTC logic
         video_constraint = st.session_state.get("camera_enabled", True)
         audio_constraint = st.session_state.get("mic_enabled", True)
-        
-        webrtc_ctx = webrtc_streamer(
-            key=f"room-{room_code}-{video_constraint}-{audio_constraint}",
-            mode=WebRtcMode.SENDRECV,
-            rtc_configuration=RTC_CONFIGURATION,
-            media_stream_constraints={
-                "video": video_constraint,
-                "audio": audio_constraint
-            },
-            video_html_attrs={
-                "style": {"width": "100%", "border-radius": "12px", "border": "1px solid #373A40"},
-                "controls": False,
-                "autoPlay": True,
-            },
-            async_processing=True,
-        )
+
+        if not _WEBRTC_AVAILABLE:
+            st.warning(
+                "🎥 Video conferencing is temporarily unavailable in this deployment. "
+                "Chat, notes, and PDFs still work."
+            )
+            if _WEBRTC_ERROR:
+                with st.expander("Details"):
+                    st.code(_WEBRTC_ERROR)
+            webrtc_ctx = None
+        else:
+            webrtc_ctx = webrtc_streamer(
+                key=f"room-{room_code}-{video_constraint}-{audio_constraint}",
+                mode=WebRtcMode.SENDRECV,
+                rtc_configuration=RTC_CONFIGURATION,
+                media_stream_constraints={
+                    "video": video_constraint,
+                    "audio": audio_constraint
+                },
+                video_html_attrs={
+                    "style": {"width": "100%", "border-radius": "12px", "border": "1px solid #373A40"},
+                    "controls": False,
+                    "autoPlay": True,
+                },
+                async_processing=True,
+            )
         
         # Media controls
         ctrl_col1, ctrl_col2 = st.columns(2)
