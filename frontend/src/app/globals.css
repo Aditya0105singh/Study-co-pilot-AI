@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   STUDENT COPILOT AI — Pure Black X/Twitter Design System
+   ═══════════════════════════════════════════════════════════ */
+
+@theme inline {
+  --color-bg: #000000;
+  --color-bg2: #0a0a0a;
+  --color-s1: rgba(255, 255, 255, 0.03);
+  --color-s2: rgba(255, 255, 255, 0.055);
+  --color-s3: rgba(255, 255, 255, 0.08);
+  --color-b1: rgba(255, 255, 255, 0.08);
+  --color-b2: rgba(255, 255, 255, 0.15);
+  --color-purple: #7c6fe0;
+  --color-purple-dim: rgba(124, 111, 224, 0.12);
+  --color-teal: #1fc8a0;
+  --color-teal-dim: rgba(31, 200, 160, 0.1);
+  --color-coral: #f26d50;
+  --color-coral-dim: rgba(242, 109, 80, 0.1);
+  --color-amber: #f0a030;
+  --color-amber-dim: rgba(240, 160, 48, 0.1);
+  --color-text: #e7e9ea;
+  --color-text2: #71767b;
+  --color-muted: #536471;
+  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+}
+
+/* ── Scrollbar ─────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Base ──────────────────────────────── */
+html, body {
+  background-color: #000000;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Subtle Ambient — very faint on pure black ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: -320px; left: -200px;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(124,111,224,0.04) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -200px; right: -140px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(31,200,160,0.03) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Animations ────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-fade-in {
+  animation: fadeIn 0.35s ease both;
+}
+
+/* ── Glass Surface — X/Twitter style ───── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Markdown Prose ────────────────────── */
+.prose-copilot h1, .prose-copilot h2, .prose-copilot h3,
+.prose-copilot h4, .prose-copilot h5, .prose-copilot h6 {
+  color: var(--color-text);
+  font-weight: 700;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+}
+.prose-copilot p {
+  color: var(--color-text2);
+  line-height: 1.7;
+  margin-bottom: 0.8em;
+}
+.prose-copilot ul, .prose-copilot ol {
+  color: var(--color-text2);
+  padding-left: 1.5em;
+  margin-bottom: 0.8em;
+}
+.prose-copilot li { margin-bottom: 0.3em; }
+.prose-copilot code {
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: var(--color-purple);
+}
+.prose-copilot pre {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+.prose-copilot pre code {
+  background: none;
+  padding: 0;
+  color: var(--color-text2);
+}
+.prose-copilot table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+.prose-copilot th, .prose-copilot td {
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 8px 12px;
+  text-align: left;
+}
+.prose-copilot th {
+  background: rgba(255,255,255,0.05);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.prose-copilot blockquote {
+  border-left: 3px solid var(--color-purple);
+  padding-left: 1em;
+  color: var(--color-text2);
+  margin-bottom: 1em;
+}
+.prose-copilot strong { color: var(--color-text); }
+.prose-copilot a {
+  color: var(--color-purple);
+  text-decoration: underline;
+}

@@ -282,4 +282,15 @@ def chat_interface(mode):
                     st.session_state.messages.append({"role": "assistant", "content": err_msg})
                     st.error(err_msg)
 
-                
+                        st.markdown(parts[0])
+                        render_mermaid(parts[1].split("[DIAGRAM_END]")[0].strip())
+                    elif mode == "flashcards" and "Q:" in res:
+                        render_flashcards(res)
+                    else:
+                        render_ai_response_card(res, mode)
+
+                except Exception as e:
+                    err_msg = f"❌ Error: {str(e)}"
+                    st.session_state.messages.append({"role": "assistant", "content": err_msg})
+                    st.error(err_msg)
+
