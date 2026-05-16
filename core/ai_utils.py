@@ -4,9 +4,12 @@ core/ai_utils.py
 
 Dual-LLM inference router for Study Copilot AI.
 
-Routes each query between two backends:
-  * Groq (Llama 3)      - fast factual queries, low latency
-  * Gemini 2.5 Flash    - deep reasoning, long-form, PDF analysis
+Backends:
+  * Groq  (Llama 3)    - fast factual queries, low latency
+  * Gemini (2.0 Flash) - deep reasoning, long-form, PDF analysis
+
+Uses the new `google-genai` SDK (`from google import genai`) so it shares
+the same Gemini client family as utils/ai_helper.py.
 
 Public API:
     score_complexity(query)            -> "groq" | "gemini"
@@ -31,16 +34,29 @@ from dotenv import load_dotenv
 # ---------------------------------------------------------------------------
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Gemini client
+def _get_key(name: str) -> Optional[str]:
+    """Try env vars first, then st.secrets — matches utils/ai_helper.py behaviour."""
+    val = os.getenv(name)
+    if not val:
+        try:
+            if hasattr(st, "secrets") and name in st.secrets:
+                val = st.secrets[name]
+        except Exception:
+            pass
+    return val
+
+
+GEMINI_API_KEY = _get_key("GEMINI_API_KEY")
+GROQ_API_KEY = _get_key("GROQ_API_KEY")
+
+# Gemini client (new google-genai SDK)
 try:
-    import google.generativeai as genai  # type: ignore
-    if GEMINI_API_KEY:
-        genai.configure(api_key=GEMINI_API_KEY)
+    from google import genai  # type: ignore
+    gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 except Exception:
     genai = None  # type: ignore
+    gemini_client = None
 
 # Groq client
 try:
@@ -50,8 +66,9 @@ except Exception:
     Groq = None  # type: ignore
     groq_client = None
 
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 GROQ_MODEL_NAME = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
 
 # ---------------------------------------------------------------------------
 # Complexity scoring
@@ -167,8 +184,8 @@ def _history_to_gemini_text(history: Optional[Iterable[dict]]) -> str:
 # Streaming backends
 # ---------------------------------------------------------------------------
 def stream_gemini(prompt: str, history: Optional[Iterable[dict]] = None) -> Generator[str, None, None]:
-    """Yield text chunks from Gemini using the streaming API."""
-    if genai is None or not GEMINI_API_KEY:
+    """Yield text chunks from Gemini using google-genai's streaming API."""
+    if gemini_client is None or not GEMINI_API_KEY:
         yield "Gemini is not configured. Set GEMINI_API_KEY in your .env."
         return
 
@@ -176,18 +193,33 @@ def stream_gemini(prompt: str, history: Optional[Iterable[dict]] = None) -> Gene
     full_prompt = f"{context}\n\nUser: {prompt}" if context else prompt
 
     try:
-        model = genai.GenerativeModel(GEMINI_MODEL_NAME)
-        response = model.generate_content(full_prompt, stream=True)
-        for chunk in response:
+        # New google-genai SDK streaming
+        stream = gemini_client.models.generate_content_stream(
+            model=GEMINI_MODEL_NAME,
+            contents=full_prompt,
+        )
+        for chunk in stream:
             text = getattr(chunk, "text", None)
             if text:
                 yield text
     except Exception as e:
+        # Fallback: non-streaming single shot
+        try:
+            response = gemini_client.models.generate_content(
+                model=GEMINI_MODEL_NAME,
+                contents=full_prompt,
+            )
+            text = getattr(response, "text", None)
+            if text:
+                yield text
+                return
+        except Exception:
+            pass
         yield f"\n\nGemini error: {e}"
 
 
 def stream_groq(prompt: str, history: Optional[Iterable[dict]] = None) -> Generator[str, None, None]:
-    """Yield text chunks from Groq using the streaming API."""
+    """Yield text chunks from Groq using its streaming API."""
     if groq_client is None or not GROQ_API_KEY:
         yield "Groq is not configured. Set GROQ_API_KEY in your .env."
         return
@@ -256,9 +288,9 @@ def get_llm_client(api_choice: str = "Groq"):
     """Legacy helper for older modules. Returns (client, label)."""
     choice = (api_choice or "").lower()
     if choice in ("gemini", "google"):
-        if genai is None or not GEMINI_API_KEY:
+        if gemini_client is None:
             raise ValueError("Missing GEMINI_API_KEY in .env")
-        return genai, "Gemini"
+        return gemini_client, "Gemini"
     if choice in ("groq", "groq (free)", "llama", "llama3"):
         if groq_client is None:
             raise ValueError("Missing GROQ_API_KEY in .env")
