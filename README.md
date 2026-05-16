@@ -2,7 +2,11 @@
 
 > AI-powered academic assistant with intelligent dual-LLM routing, collaborative study rooms, and multi-modal learning tools.
 
+
 🏆 **2nd Place — Pixel to Product Hackathon**
+
+<!-- Replace with an actual screenshot path later -->
+>>>>
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org)
@@ -177,3 +181,4 @@ App opens at `http://localhost:8501`.
 ---
 
 <sub>Built with care for students who want a smarter study partner.</sub>
+
