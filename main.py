@@ -58,7 +58,7 @@ for _k, _v in _DEFAULTS.items():
     st.session_state.setdefault(_k, _v)
 
 if not st.session_state.welcomed:
-    st.toast("Welcome to Study Copilot — your AI study suite is ready.", icon="✦")
+    st.toast("Welcome to Study Copilot — your AI study suite is ready.", icon="✨")
     st.session_state.welcomed = True
 
 # ─────────────────────────────────────────────────────────────
