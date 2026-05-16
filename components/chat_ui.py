@@ -326,18 +326,16 @@ def chat_interface(mode):
         previous_context = st.session_state.pop("_pending_prev", "")
         st.session_state.pop("_pending_mode", None)
 
-        api_choice = st.session_state.get("api_choice", "")
-        use_router = api_choice == "Auto (Dual-LLM)" and st.session_state.get("streaming_enabled", True)
-
         with st.chat_message("assistant"):
             res = None
             try:
-                if use_router:
-                    with st.spinner("Routing…"):
-                        res = _stream_via_router(final_prompt, st.session_state.messages[-7:-1])
-                if res is None:
-                    with st.spinner("Thinking…"):
-                        res = _run_mode(mode, final_prompt, previous_context)
+                # Always run the mode helper so each mode keeps its specialized
+                # prompt engineering (mermaid for visualizer, Q:/A: for
+                # flashcards, structured MCQs for quizzer, etc.). The chosen
+                # AI engine ("Auto (Dual-LLM)" / Groq / Gemini / Grok) is read
+                # downstream by utils/ai_helper.generate_response.
+                with st.spinner("Thinking…"):
+                    res = _run_mode(mode, final_prompt, previous_context)
 
                 st.session_state.messages.append({"role": "assistant", "content": res})
                 log_usage(mode, st.session_state.get("answer_style", ""), bool(pdf_content),

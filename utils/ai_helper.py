@@ -80,6 +80,15 @@ def generate_response(prompt: str) -> str:
 
     primary_choice = st.session_state.get("api_choice", "Groq (Free)")
 
+    # Auto (Dual-LLM): pick Groq vs Gemini per query via complexity scoring.
+    if primary_choice == "Auto (Dual-LLM)":
+        try:
+            from core.ai_utils import score_complexity
+            picked = score_complexity(prompt)
+        except Exception:
+            picked = "groq"
+        primary_choice = "Gemini" if picked == "gemini" else "Groq (Free)"
+
     # Try primary choice first
     gen_fn = generators.get(primary_choice, try_groq)
     res, err = gen_fn(prompt)
