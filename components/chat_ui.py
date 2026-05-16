@@ -15,7 +15,7 @@ from utils.pdf_export import add_pdf_download_button
 from utils.session_export import add_markdown_download, add_json_download
 from utils.markdown_render import render_rich_markdown, has_math
 from components.quick_actions import render_quick_actions
-from components.feedback import feedback_row
+from components.feedback import feedback_row, consume_regenerate_request
 import re
 import streamlit.components.v1 as components
 
@@ -233,6 +233,40 @@ def chat_interface(mode):
         "resume":     "Paste your resume text or ask for feedback…",
     }
     placeholder = placeholders.get(mode, "Type your message here...")
+
+    # ── Regenerate handler ─────────────────────────────────────
+    regen_idx = consume_regenerate_request()
+    if regen_idx is not None:
+        msgs = st.session_state.messages
+        if 0 <= regen_idx < len(msgs) and msgs[regen_idx].get("role") == "assistant":
+            # Find the user prompt that triggered this answer
+            user_idx = regen_idx - 1
+            while user_idx >= 0 and msgs[user_idx].get("role") != "user":
+                user_idx -= 1
+            if user_idx >= 0:
+                prompt_text = str(msgs[user_idx].get("content", ""))
+                # Truncate history at the user message (drop assistant + after)
+                st.session_state.messages = msgs[: user_idx + 1]
+                # Rebuild final_prompt the same way new prompts get built
+                previous_context = get_previous_messages_summary(
+                    st.session_state.messages[:-1], limit=4
+                )
+                if pdf_content:
+                    final_prompt = (
+                        f"PDF Context:\n{pdf_content[:8000]}\n\n"
+                        f"Conversation so far:\n{previous_context}\n\n"
+                        f"User: {prompt_text}"
+                    )
+                else:
+                    final_prompt = (
+                        f"Conversation so far:\n{previous_context}\n\n"
+                        f"User: {prompt_text}"
+                        if previous_context else prompt_text
+                    )
+                st.session_state._pending_prompt = final_prompt
+                st.session_state._pending_prev = previous_context
+                st.session_state._pending_mode = mode
+                st.toast("Regenerating…", icon="🔄")
 
     if not st.session_state.messages:
         # Empty State UI

@@ -49,12 +49,9 @@ def sidebar_ui():
         help="Auto routes each query to Groq or Gemini based on complexity. Choose a single engine to force it.",
     )
 
-    # Streaming toggle (drives the streaming path in chat_ui)
-    st.session_state.streaming_enabled = st.sidebar.toggle(
-        "⚡ Streaming responses",
-        value=st.session_state.get("streaming_enabled", True),
-        help="Stream tokens live instead of waiting for the full answer.",
-    )
+    # Mode helpers always run with their specialised prompts; streaming
+    # is wired through individual mode pipelines so no global toggle here.
+    st.session_state.streaming_enabled = False
 
     # Model badge
     model_map = {

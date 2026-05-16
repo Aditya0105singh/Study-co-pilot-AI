@@ -5,9 +5,6 @@
 
 🏆 **2nd Place — Pixel to Product Hackathon**
 
-<!-- Replace with an actual screenshot path later -->
->>>>
-
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org)
 [![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev)
@@ -162,11 +159,17 @@ App opens at `http://localhost:8501`.
 
 ## 🗺️ Roadmap
 
-- [ ] Streaming responses
-- [ ] PDF export of notes
-- [ ] Token usage tracker
+- [x] Streaming responses (Groq + Gemini)
+- [x] PDF export of notes
+- [x] Markdown + JSON session export
+- [x] Token usage tracker
+- [x] Speech-to-text (Groq Whisper)
+- [x] Quick-action suggestion chips per mode
+- [x] Per-message thumbs feedback
+- [x] Dual-LLM auto routing with Gemini circuit breaker
 - [ ] Persistent user history
-- [ ] Speech-to-text
+- [ ] Streaming responses inside every mode helper
+- [ ] Team study rooms with persistent chat history
 
 ---
 

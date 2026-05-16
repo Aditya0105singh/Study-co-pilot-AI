@@ -19,39 +19,39 @@ import streamlit as st
 
 SUGGESTIONS = {
     "explainer": [
-        "Explain backpropagation in plain English",
+        "Explain backpropagation like I'm 12",
         "What is the CAP theorem?",
-        "Compare TCP and UDP step by step",
-        "Why is recursion useful in tree traversal?",
+        "Compare TCP vs UDP with examples",
+        "Why does recursion work on trees?",
     ],
     "visualizer": [
-        "Draw a flowchart of HTTPS handshake",
-        "Visualize the data flow in a REST API",
-        "Show the lifecycle of a React component",
-        "Diagram the OSI 7-layer model",
+        "Flowchart the HTTPS handshake",
+        "Visualize a REST API request lifecycle",
+        "Diagram a React component lifecycle",
+        "Draw the OSI 7-layer model",
     ],
     "flashcards": [
-        "Generate 10 flashcards on Operating Systems",
-        "Make flashcards from the uploaded PDF",
-        "Quick flashcards on SQL JOIN types",
-        "Flashcards: top 15 Python built-ins",
+        "10 flashcards on Operating Systems",
+        "Flashcards from my uploaded PDF",
+        "Quick deck on SQL JOIN types",
+        "Top 15 Python built-ins as flashcards",
     ],
     "quizzer": [
         "Quiz me on Data Structures basics",
         "5 MCQs on linear algebra",
-        "Mixed quiz on networking + DBMS",
-        "Easy warm-up quiz on Python syntax",
+        "Mixed quiz: networking + DBMS",
+        "Warm-up quiz on Python syntax",
     ],
     "interview": [
-        "Mock interview for backend developer role",
-        "Ask me behavioral questions for a PM role",
-        "System design: design a URL shortener",
-        "Frontend interview: React hooks deep dive",
+        "Mock backend developer interview",
+        "Behavioral questions for a PM role",
+        "System design: URL shortener",
+        "Frontend deep dive: React hooks",
     ],
     "resume": [
-        "Review my resume for an ML engineer role",
-        "Strengthen the impact bullets in my experience",
-        "How can I tailor this resume for FAANG?",
+        "Review my resume for ML Engineer roles",
+        "Strengthen my impact bullets",
+        "Tailor this resume for FAANG",
         "Find weak verbs and suggest replacements",
     ],
 }
@@ -66,18 +66,16 @@ def _chips_for(mode: str) -> List[str]:
 
 
 def render_quick_actions(mode: str, key_prefix: str = "qa") -> Optional[str]:
-    """
-    Render quick-start chips. Returns the chosen suggestion text, or None.
-    Caller is responsible for pushing it through the chat pipeline.
-    """
+    """Render quick-start chips. Returns the chosen suggestion text, or None."""
     chips = _chips_for(mode)
     if not chips:
         return None
 
     st.markdown(
-        '<div style="text-align:center;opacity:0.7;font-size:0.78rem;'
-        'letter-spacing:1px;text-transform:uppercase;margin:0.4rem 0 0.6rem;">'
-        'Try one of these to get started'
+        '<div style="text-align:center;margin:0.3rem 0 0.7rem;'
+        'font-size:0.72rem;letter-spacing:1.5px;text-transform:uppercase;'
+        'opacity:0.55;font-weight:600;">'
+        '✨  Try one of these to get started  ✨'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -86,7 +84,12 @@ def render_quick_actions(mode: str, key_prefix: str = "qa") -> Optional[str]:
     cols = st.columns(min(len(chips), 4))
     for i, chip in enumerate(chips):
         with cols[i % len(cols)]:
-            if st.button(chip, key=f"{key_prefix}_{mode}_{i}", use_container_width=True):
+            if st.button(
+                chip,
+                key=f"{key_prefix}_{mode}_{i}",
+                use_container_width=True,
+                help="Click to use this prompt",
+            ):
                 picked = chip
 
     return picked

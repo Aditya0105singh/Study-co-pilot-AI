@@ -2,12 +2,14 @@
 components/feedback.py
 ======================
 
-Per-message feedback (👍 / 👎) and chat-management helpers (clear, regenerate
-hooks). Feedback is persisted to st.session_state.feedback_log so the user
+Per-message feedback (👍 / 👎) and chat-management helpers.
+Feedback is persisted to st.session_state.feedback_log so the user
 can later review or export it.
 
 Public API:
     feedback_row(message_index, on_copy=None, on_regen=None) -> None
+    request_regenerate(message_index) -> None
+    consume_regenerate_request() -> Optional[int]
     clear_chat_button(key="clear_chat") -> bool
     get_feedback_log() -> list[dict]
 """
@@ -45,6 +47,16 @@ def _record(message_index: int, vote: str) -> None:
     st.session_state[f"_feedback_done_{message_index}"] = vote
 
 
+def request_regenerate(message_index: int) -> None:
+    """Flag a message for regeneration. chat_ui picks this up next rerun."""
+    st.session_state["_regen_request"] = message_index
+
+
+def consume_regenerate_request() -> Optional[int]:
+    """Return the requested regenerate index and clear it, or None."""
+    return st.session_state.pop("_regen_request", None)
+
+
 def feedback_row(
     message_index: int,
     on_copy: Optional[Callable[[], None]] = None,
@@ -65,13 +77,29 @@ def feedback_row(
             _record(message_index, "down")
             st.toast("Noted — we'll do better.", icon="📝")
     with cols[2]:
-        if on_copy is not None and st.button("📋", key=f"fb_copy_{message_index}",
-                                             help="Copy to clipboard hint"):
-            on_copy()
+        if st.button("📋", key=f"fb_copy_{message_index}",
+                     help="Copy as plain text"):
+            msgs = st.session_state.get("messages", [])
+            if 0 <= message_index < len(msgs):
+                content = str(msgs[message_index].get("content", ""))
+                # No reliable cross-browser clipboard from Streamlit Python
+                # side, so show the text in an expander the user can copy.
+                st.session_state[f"_show_copy_{message_index}"] = content
+            if on_copy is not None:
+                on_copy()
     with cols[3]:
-        if on_regen is not None and st.button("🔄", key=f"fb_regen_{message_index}",
-                                              help="Regenerate"):
-            on_regen()
+        if st.button("🔄", key=f"fb_regen_{message_index}",
+                     help="Regenerate this answer"):
+            request_regenerate(message_index)
+            if on_regen is not None:
+                on_regen()
+            st.rerun()
+
+    # Copy popover (appears when 📋 clicked)
+    copy_text = st.session_state.pop(f"_show_copy_{message_index}", None)
+    if copy_text is not None:
+        with st.expander("📋 Copy this answer", expanded=True):
+            st.code(copy_text, language="markdown")
 
     if already:
         with cols[4]:
@@ -80,15 +108,11 @@ def feedback_row(
 
 
 def clear_chat_button(key: str = "clear_chat") -> bool:
-    """
-    Render a clear-chat button. Returns True if the chat was just cleared so
-    the caller can also reset any mode-specific state.
-    """
+    """Render a clear-chat button. Returns True if the chat was just cleared."""
     if st.button("🧹 Clear chat", key=key, use_container_width=True):
         st.session_state.messages = []
-        # Drop any pending streaming state too
         for k in list(st.session_state.keys()):
-            if isinstance(k, str) and k.startswith(("_pending_", "_feedback_done_")):
+            if isinstance(k, str) and k.startswith(("_pending_", "_feedback_done_", "_show_copy_")):
                 del st.session_state[k]
         st.toast("Chat cleared.", icon="🧼")
         return True
