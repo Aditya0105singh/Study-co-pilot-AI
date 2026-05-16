@@ -11,6 +11,7 @@ from core.visualizer import generate_visual
 from core.flashcards import generate_flashcards_api
 from core.resume_reviewer import review_resume
 from utils.logger import log_usage
+from utils.pdf_export import add_pdf_download_button
 import re
 import streamlit.components.v1 as components
 
@@ -210,6 +211,19 @@ def chat_interface(mode):
             else:
                 st.markdown(msg["content"])
 
+    # PDF export — only show when there's something worth exporting
+    try:
+        if len(st.session_state.get("messages", [])) > 2:
+            add_pdf_download_button(
+                st.session_state.messages,
+                filename=f"study_notes_{mode}.pdf",
+                title=f"Study Copilot Notes — {mode.capitalize()}",
+                key=f"pdf_export_{mode}",
+            )
+    except Exception:
+        # Never let export button crash the chat UI
+        pass
+
     # Input
     prompt = st.chat_input(placeholder)
     if prompt:
@@ -268,3 +282,4 @@ def chat_interface(mode):
                     st.session_state.messages.append({"role": "assistant", "content": err_msg})
                     st.error(err_msg)
 
+                

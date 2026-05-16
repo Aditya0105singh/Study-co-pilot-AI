@@ -1,6 +1,9 @@
 streamlit
-google-genai==0.8.0
+google-generativeai
+groq
 python-dotenv
 PyPDF2
+pdfplumber
+fpdf2
 streamlit-webrtc
 openai

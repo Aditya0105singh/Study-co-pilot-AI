@@ -1,70 +1,46 @@
-# 🧾 CHANGELOG
-**Project:** AI-Powered Study Buddy  
-**Repository:** [GPA95/AI_StudyBuddy](https://github.com/GPA95/AI_StudyBuddy)  
-**Last Updated:** 14 November 2025
+# 📒 CHANGELOG
 
-### 🆕 Version 1.1.0 — Major Feature Update (November 2025)
+**Project:** Study Copilot AI
+**Author:** Aditya Singh
 
-#### ✨ New Features & Improvements
-
-- **Quizzer Mode Expanded:**  
-  - Added three sub-modes:
-    - 📝 Generate Questions: MCQ, T/F, Fill in the Blanks, Descriptive — answers collected in answer key section
-    - 📖 Solve Questions: Exam-style answers auto-adapted to marks/word limit
-    - ✅ Evaluate Answers: Automated feedback, scoring, and tips for submitted answers
-  - Answer key now shown at the end of quizzes for self-testing
-
-- **Context-Aware Chat:**
-  - Improved support for follow-up questions/responses using previous chat history in all modes
-
-- **Dynamic Sidebar:**  
-  - Nested radio buttons for Quizzer actions; emoji-powered UI  
-  - Clickable badge links for **GitHub Repo** and **User Help** document
-
-- **User Help Documentation:**  
-  - Published quick-start guide covering sample inputs, usage tips, format instructions, troubleshooting, and UI walkthrough
-  - Help doc directly accessible from sidebar
-
-- **Refined Prompts & Outputs:**
-  - Exam-optimized summaries and answer formatting
-  - Markdown-friendly structure, answer keys, bullet points
-  - Improved adaptive answer length based on marks/word limits
-
-- **UI/UX Enhancements:**
-  - Code block outputs with one-click copy capability
-  - Info banners for mode guidance and instructions
-  - Instant feedback buttons for user rating after responses
-
-- **Performance / Stability:**
-  - Improved error/timeout handling for API rate limits
-  - Input text limits for large notes/PDFs for manageable processing
-  - Auto-clearing new chat notifications for better UX
-
-#### 🛠️ Other Updates
-
-- Streamlined code structure and modularization for maintainability
-- Optimized backend prompt logic for clarity, exam readiness, and user options
-- Foundations laid for planned features (speech, flashcards, login, notes, multi-language, etc.)
+All notable changes to this project are documented in this file. Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-### 🏁 Version 1.0.0 — Initial Release (October 2025)
+## [v2.0.0] — Major Architecture Overhaul · January 2026
 
-#### ✅ Present Features
-- AI Chat Modes: **Explainer**, **Summarizer**, **Quizzer**
-- **PDF Upload & Summarization** (PyPDF2 + PDFPlumber)
-- **Streamlit-based Chat UI** with sidebar & new chat
-- **Gemini 2.5 Flash API** integration for AI responses
-- **Secure API key handling** using `.env` and `st.secrets`
-- **Deployed** on Streamlit Cloud
-- **Clean modular structure** (core, components, utils, assets)
+A ground-up overhaul focused on speed, modularity, and collaborative learning.
 
-#### 🚀 Next Tasks (v1.1.0)
-- Add **speech-to-text** and **text-to-speech** support
-- Implement **multilingual explanations**
-- Add **flashcard generation** with spaced repetition
-- Enable **persistent chat memory**
-- Integrate **user login + note storage**
-- Enhance **UI/UX** and theme customization
+### Core changes
+
+- **Dual-LLM Routing System** — added Groq API alongside the existing Gemini backend and built a complexity-scoring router (`core/ai_utils.py::score_complexity`) that dispatches each query to the optimal model based on length, intent keywords, and structure.
+- **Collaborative Study Rooms** — real-time shared study sessions using a simple join-code system; multiple users can study together in the same context.
+- **Complete dark premium UI redesign** — refreshed visual language with CSS animations, smooth transitions, and a Midnight Aurora accent palette across all modes.
+- **Full mobile responsive layout** — every panel, card, and modal now adapts cleanly down to small viewports.
+- **Modular refactor** — code split into clear `core/`, `components/`, and `utils/` packages so each mode, UI block, and helper lives in its own module.
+
+### New modes added
+
+- **Interview Practice** — mock technical and behavioral interviews with structured feedback.
+- **Resume Review** — section-by-section critique tailored to the target role.
+- **Visualize Concepts** — Mermaid-powered diagrams and flowcharts generated from natural-language descriptions.
+- **Flashcards** — spaced-repetition flashcard sets generated from any topic or uploaded PDF.
+
+---
+
+## [v1.1.0] — Quizzer Expansion · November 2025
+
+- **Quizzer sub-modes** — split into three flows: **Generate** (build quizzes), **Solve** (take quizzes), and **Evaluate** (score and explain answers).
+- **Context-aware follow-up chat** — assistant now carries previous turns into the next prompt so the conversation stays coherent.
+- **Dynamic sidebar navigation** — sidebar reshapes itself based on the active mode, exposing only the controls relevant to the current task.
+
+---
+
+## [v1.0.0] — Initial Release · October 2025
+
+- **Explainer**, **Summarizer**, and **Quizzer** modes.
+- **PDF upload** for in-document Q&A.
+- **Gemini integration** as the primary LLM backend.
+- Deployed to **Streamlit Cloud**.
 
 ---

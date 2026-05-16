@@ -1,43 +1,266 @@
-# core/ai_utils.py
-#Handles API selection, loading keys, and LLM initialization.
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
-import google.generativeai as genai
+"""
+core/ai_utils.py
+================
 
+Dual-LLM inference router for Study Copilot AI.
+
+Routes each query between two backends:
+  * Groq (Llama 3)      - fast factual queries, low latency
+  * Gemini 2.5 Flash    - deep reasoning, long-form, PDF analysis
+
+Public API:
+    score_complexity(query)            -> "groq" | "gemini"
+    show_model_badge(model, latency)   -> renders inline HTML badge
+    update_token_tracker(...)          -> updates st.session_state.usage_stats
+    stream_groq(prompt, history)       -> generator of text chunks
+    stream_gemini(prompt, history)     -> generator of text chunks
+    get_streamed_response(prompt, ...) -> full response string
+"""
+
+from __future__ import annotations
+
+import os
+import time
+from typing import Generator, Iterable, List, Optional
+
+import streamlit as st
+from dotenv import load_dotenv
+
+# ---------------------------------------------------------------------------
+# Environment / API setup
+# ---------------------------------------------------------------------------
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-def get_llm_client(api_choice="OpenAI"):
-    """Initialize and return LLM client based on user choice."""
-    if api_choice == "OpenAI":
-        if not OPENAI_API_KEY:
-            raise ValueError("❌ Missing OpenAI API Key in .env")
-        client = OpenAI(api_key=OPENAI_API_KEY)
-        return client, "OpenAI"
-    elif api_choice == "Gemini":
-        if not GEMINI_API_KEY:
-            raise ValueError("❌ Missing Gemini API Key in .env")
+# Gemini client
+try:
+    import google.generativeai as genai  # type: ignore
+    if GEMINI_API_KEY:
         genai.configure(api_key=GEMINI_API_KEY)
-        return genai, "Gemini"
-    elif api_choice == "Grok":
-        xai_api_key = os.getenv("XAI_API_KEY")
-        if not xai_api_key:
-            raise ValueError("❌ Missing XAI API Key in .env")
-        client = OpenAI(api_key=xai_api_key, base_url="https://api.x.ai/v1")
-        return client, "Grok"
-    elif api_choice == "Groq":
-        groq_api_key = os.getenv("GROQ_API_KEY")
-        if not groq_api_key:
-            raise ValueError("❌ Missing GROQ API Key in .env")
-        client = OpenAI(api_key=groq_api_key, base_url="https://api.groq.com/openai/v1")
-        return client, "Groq"
-    else:
-        raise ValueError("Invalid API choice. Use 'OpenAI', 'Gemini', 'Grok', or 'Groq'.")
+except Exception:
+    genai = None  # type: ignore
 
-print("🔑 OpenAI key loaded:", bool(os.getenv("OPENAI_API_KEY")))
-print(os.getenv("OPENAI_API_KEY"))
-print("🔑 Gemini key loaded:", bool(os.getenv("GEMINI_API_KEY")))
-print(os.getenv("GEMINI_API_KEY"))
+# Groq client
+try:
+    from groq import Groq  # type: ignore
+    groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+except Exception:
+    Groq = None  # type: ignore
+    groq_client = None
+
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GROQ_MODEL_NAME = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+# ---------------------------------------------------------------------------
+# Complexity scoring
+# ---------------------------------------------------------------------------
+_FAST_KEYWORDS = ("define", "what is", "list", "who")
+_DEEP_KEYWORDS = ("explain", "why", "compare", "analyze", "step by step", "derive")
+
+
+def score_complexity(query: str) -> str:
+    """Pick which LLM should answer this query."""
+    if not query or not query.strip():
+        return "groq"
+
+    q = query.lower().strip()
+    word_count = len(q.split())
+
+    if word_count < 8:
+        return "groq"
+    if any(kw in q for kw in _FAST_KEYWORDS):
+        return "groq"
+    if any(kw in q for kw in _DEEP_KEYWORDS):
+        return "gemini"
+    if word_count > 20:
+        return "gemini"
+    return "groq"
+
+
+# ---------------------------------------------------------------------------
+# Model badge
+# ---------------------------------------------------------------------------
+def show_model_badge(model: str, latency_ms: float) -> None:
+    """Render a small inline HTML badge showing which model answered."""
+    latency = int(round(latency_ms))
+
+    if model == "groq":
+        bg = "linear-gradient(135deg, #F55036 0%, #FF7A45 100%)"
+        text = f"⚡ Groq · Fast inference · {latency}ms"
+    else:
+        bg = "linear-gradient(135deg, #2563EB 0%, #4285F4 100%)"
+        text = f"\U0001F9E0 Gemini · Deep reasoning · {latency}ms"
+
+    html = (
+        '<div style="display:inline-block;background:' + bg + ';color:#ffffff;'
+        'padding:4px 10px;border-radius:999px;font-size:0.72rem;font-weight:600;'
+        'letter-spacing:0.3px;margin:6px 0;box-shadow:0 2px 8px rgba(0,0,0,0.25);">'
+        + text + '</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# Token / usage tracker
+# ---------------------------------------------------------------------------
+def _ensure_usage_stats() -> dict:
+    if "usage_stats" not in st.session_state:
+        st.session_state.usage_stats = {
+            "total_queries": 0,
+            "groq_calls": 0,
+            "gemini_calls": 0,
+            "total_input_tokens": 0,
+            "total_output_tokens": 0,
+            "avg_latency_ms": 0.0,
+            "_latency_sum_ms": 0.0,
+        }
+    return st.session_state.usage_stats
+
+
+def update_token_tracker(model: str, input_tokens: int, output_tokens: int, latency_ms: float) -> None:
+    """Update the rolling session usage stats."""
+    stats = _ensure_usage_stats()
+    stats["total_queries"] += 1
+    if model == "groq":
+        stats["groq_calls"] += 1
+    elif model == "gemini":
+        stats["gemini_calls"] += 1
+    stats["total_input_tokens"] += int(input_tokens or 0)
+    stats["total_output_tokens"] += int(output_tokens or 0)
+    stats["_latency_sum_ms"] = stats.get("_latency_sum_ms", 0.0) + float(latency_ms or 0)
+    stats["avg_latency_ms"] = stats["_latency_sum_ms"] / stats["total_queries"]
+
+
+# ---------------------------------------------------------------------------
+# History helpers
+# ---------------------------------------------------------------------------
+def _tail_history(history: Optional[Iterable[dict]], n: int = 6) -> List[dict]:
+    if not history:
+        return []
+    try:
+        return list(history)[-n:]
+    except TypeError:
+        return []
+
+
+def _history_to_groq_messages(history: Optional[Iterable[dict]]) -> List[dict]:
+    out: List[dict] = []
+    for m in _tail_history(history, 6):
+        role = m.get("role", "user")
+        if role not in ("user", "assistant", "system"):
+            role = "user"
+        out.append({"role": role, "content": str(m.get("content", ""))})
+    return out
+
+
+def _history_to_gemini_text(history: Optional[Iterable[dict]]) -> str:
+    lines: List[str] = []
+    for m in _tail_history(history, 6):
+        role = m.get("role", "user").capitalize()
+        lines.append(f"{role}: {m.get('content', '')}")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Streaming backends
+# ---------------------------------------------------------------------------
+def stream_gemini(prompt: str, history: Optional[Iterable[dict]] = None) -> Generator[str, None, None]:
+    """Yield text chunks from Gemini using the streaming API."""
+    if genai is None or not GEMINI_API_KEY:
+        yield "Gemini is not configured. Set GEMINI_API_KEY in your .env."
+        return
+
+    context = _history_to_gemini_text(history)
+    full_prompt = f"{context}\n\nUser: {prompt}" if context else prompt
+
+    try:
+        model = genai.GenerativeModel(GEMINI_MODEL_NAME)
+        response = model.generate_content(full_prompt, stream=True)
+        for chunk in response:
+            text = getattr(chunk, "text", None)
+            if text:
+                yield text
+    except Exception as e:
+        yield f"\n\nGemini error: {e}"
+
+
+def stream_groq(prompt: str, history: Optional[Iterable[dict]] = None) -> Generator[str, None, None]:
+    """Yield text chunks from Groq using the streaming API."""
+    if groq_client is None or not GROQ_API_KEY:
+        yield "Groq is not configured. Set GROQ_API_KEY in your .env."
+        return
+
+    messages = _history_to_groq_messages(history)
+    messages.append({"role": "user", "content": prompt})
+
+    try:
+        completion = groq_client.chat.completions.create(
+            model=GROQ_MODEL_NAME,
+            messages=messages,
+            stream=True,
+        )
+        for chunk in completion:
+            try:
+                delta = chunk.choices[0].delta.content
+            except (AttributeError, IndexError):
+                delta = None
+            if delta:
+                yield delta
+    except Exception as e:
+        yield f"\n\nGroq error: {e}"
+
+
+# ---------------------------------------------------------------------------
+# Main router
+# ---------------------------------------------------------------------------
+def get_streamed_response(
+    prompt: str,
+    history: Optional[Iterable[dict]] = None,
+    force_model: Optional[str] = None,
+) -> str:
+    """Pick a model, stream the response, render a badge, update token stats."""
+    model = force_model if force_model in ("groq", "gemini") else score_complexity(prompt)
+
+    placeholder = st.empty()
+    start = time.time()
+    chunks: List[str] = []
+
+    stream_fn = stream_groq if model == "groq" else stream_gemini
+
+    try:
+        for piece in stream_fn(prompt, history=history):
+            chunks.append(piece)
+            placeholder.markdown("".join(chunks))
+    except Exception as e:
+        chunks.append(f"\n\nStreaming error: {e}")
+        placeholder.markdown("".join(chunks))
+
+    latency_ms = (time.time() - start) * 1000.0
+    response_text = "".join(chunks)
+
+    show_model_badge(model, latency_ms)
+
+    input_tokens = len(prompt.split()) if prompt else 0
+    output_tokens = len(response_text.split()) if response_text else 0
+    update_token_tracker(model, input_tokens, output_tokens, latency_ms)
+
+    return response_text
+
+
+# ---------------------------------------------------------------------------
+# Back-compat shim
+# ---------------------------------------------------------------------------
+def get_llm_client(api_choice: str = "Groq"):
+    """Legacy helper for older modules. Returns (client, label)."""
+    choice = (api_choice or "").lower()
+    if choice in ("gemini", "google"):
+        if genai is None or not GEMINI_API_KEY:
+            raise ValueError("Missing GEMINI_API_KEY in .env")
+        return genai, "Gemini"
+    if choice in ("groq", "groq (free)", "llama", "llama3"):
+        if groq_client is None:
+            raise ValueError("Missing GROQ_API_KEY in .env")
+        return groq_client, "Groq"
+    raise ValueError("Invalid api_choice. Use 'Gemini' or 'Groq'.")

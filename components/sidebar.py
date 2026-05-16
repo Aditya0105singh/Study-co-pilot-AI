@@ -9,7 +9,7 @@ _env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=_env_path)
 
 def sidebar_ui():
-    """Sidebar with model selector and tools — Premium Dark theme."""
+    """Sidebar with model selector and tools - Premium Dark theme."""
 
     st.sidebar.markdown("""
     <div style="padding: 0.5rem 0 1rem;">
@@ -51,18 +51,40 @@ def sidebar_ui():
     st.sidebar.markdown(f"""
     <div style="background: #0A0A0A; border: 1px solid #222222; border-radius: 8px; padding: 8px 12px; margin: 8px 0;">
         <div style="font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Active Model</div>
-        <div style="font-size: 0.85rem; color: {model_color}; font-weight: 500; margin-top: 2px;">✦ {model_name}</div>
+        <div style="font-size: 0.85rem; color: {model_color}; font-weight: 500; margin-top: 2px;">+ {model_name}</div>
     </div>
     """, unsafe_allow_html=True)
 
     from components.pdf_handler import handle_pdf_upload
-    
+
     st.sidebar.markdown("---")
-    
+
     # Universal PDF Uploader
     handle_pdf_upload()
-    
+
     st.sidebar.markdown("---")
 
     # Focus Tool
     pomodoro_timer()
+
+    # Session Stats ---------------------------------------------------------
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 📊 Session Stats")
+    try:
+        stats = st.session_state.get("usage_stats")
+        if not stats:
+            st.sidebar.caption("No queries yet this session.")
+        else:
+            total_tokens = int(stats.get("total_input_tokens", 0)) + int(stats.get("total_output_tokens", 0))
+            avg_latency = int(round(stats.get("avg_latency_ms", 0) or 0))
+
+            col1, col2 = st.sidebar.columns(2)
+            with col1:
+                st.metric("Total Queries", stats.get("total_queries", 0))
+                st.metric("Groq Calls (fast)", stats.get("groq_calls", 0))
+                st.metric("Avg Latency (ms)", avg_latency)
+            with col2:
+                st.metric("Gemini Calls (deep)", stats.get("gemini_calls", 0))
+                st.metric("Total Tokens Used", total_tokens)
+    except Exception:
+        st.sidebar.caption("Session stats unavailable.")
