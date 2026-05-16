@@ -152,19 +152,40 @@ def sanitize_mermaid(code):
     return code.replace("```mermaid", "").replace("```", "").strip()
 
 
+def _estimate_mermaid_height(code: str) -> int:
+    """Best-effort height for the embedded iframe based on diagram size.
+    Mermaid renders one rank per level for graph TD; arrows imply depth.
+    We use the number of node-bearing lines as a proxy."""
+    if not code:
+        return 480
+    node_lines = [
+        ln for ln in code.splitlines()
+        if "[" in ln and "]" in ln and "graph" not in ln.lower()
+    ]
+    nodes = max(len(node_lines), 1)
+    # ~ 60px per node, clamped 480..1600
+    return max(480, min(1600, 220 + nodes * 60))
+
+
 def render_mermaid(code):
     code = sanitize_mermaid(code)
+    h = _estimate_mermaid_height(code)
     html_code = f"""
-    <div style="background:var(--bg-2, #11121A); padding:20px; border-radius:14px; border:1px solid var(--line, #1E1F2A); margin:1rem 0; box-shadow:0 4px 18px rgba(0,0,0,0.3);">
-        <pre class="mermaid" style="text-align:center;">{code}</pre>
+    <div style="background:var(--bg-2, #11121A); padding:20px; border-radius:14px; border:1px solid var(--line, #1E1F2A); margin:1rem 0; box-shadow:0 4px 18px rgba(0,0,0,0.3); overflow:auto;">
+        <pre class="mermaid" style="text-align:center; margin:0;">{code}</pre>
     </div>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        mermaid.initialize({{ startOnLoad: true, theme: isDark ? 'dark' : 'default', securityLevel: 'loose' }});
+        mermaid.initialize({{
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            securityLevel: 'loose',
+            flowchart: {{ useMaxWidth: true, htmlLabels: true, curve: 'basis' }},
+        }});
     </script>
     """
-    components.html(html_code, height=600, scrolling=True)
+    components.html(html_code, height=h, scrolling=False)
 
 
 def render_flashcards(response_text):
