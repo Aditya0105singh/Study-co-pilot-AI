@@ -22,9 +22,32 @@ def get_api_key(key_name):
     return key
 
 # Individual model generators for fallback reuse
+def _mark_gemini_down(reason: str = "quota"):
+    """Disable Gemini for the rest of the session so Auto skips it."""
+    try:
+        st.session_state["gemini_disabled"] = True
+        st.session_state["gemini_disabled_reason"] = reason
+    except Exception:
+        pass
+
+
+def _is_gemini_down() -> bool:
+    try:
+        return bool(st.session_state.get("gemini_disabled"))
+    except Exception:
+        return False
+
+
+_QUOTA_TOKENS = ("429", "resource_exhausted", "quota exceeded",
+                 "exceeded your current quota", "rate limit")
+
+
 def try_gemini(prompt: str):
     api_key = get_api_key("GEMINI_API_KEY")
     if not api_key: return None, "❌ Gemini API Key missing"
+    # Session-level circuit breaker: skip Gemini if it already failed with quota
+    if _is_gemini_down():
+        return None, "⚠️ Gemini disabled for this session (quota previously hit)"
     try:
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
@@ -36,9 +59,11 @@ def try_gemini(prompt: str):
         return None, "⚠️ Gemini: Empty response"
     except Exception as e:
         err = str(e)
-        if "429" in err:
-            return None, "⚠️ Gemini daily free quota exceeded — falling back"
-        return None, f"❌ Gemini Error: {str(e)}"
+        lower = err.lower()
+        if any(tok in lower for tok in _QUOTA_TOKENS):
+            _mark_gemini_down("quota")
+            return None, "⚠️ Gemini daily free quota exceeded — falling back (disabled for session)"
+        return None, f"❌ Gemini Error: {err}"
 
 def try_grok(prompt: str):
     api_key = get_api_key("XAI_API_KEY")
@@ -86,6 +111,11 @@ def generate_response(prompt: str) -> str:
             from core.ai_utils import score_complexity
             picked = score_complexity(prompt)
         except Exception:
+            picked = "groq"
+        # Honour the circuit breaker — if Gemini already died this session,
+        # silently route every Auto query to Groq instead of paying a wasted
+        # round-trip per message.
+        if picked == "gemini" and _is_gemini_down():
             picked = "groq"
         primary_choice = "Gemini" if picked == "gemini" else "Groq (Free)"
 

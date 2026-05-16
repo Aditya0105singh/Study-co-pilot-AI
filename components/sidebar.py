@@ -120,6 +120,19 @@ def sidebar_ui():
     # Focus Tool
     pomodoro_timer()
 
+    # Gemini circuit-breaker status ----------------------------------------
+    if st.session_state.get("gemini_disabled"):
+        st.sidebar.markdown("---")
+        st.sidebar.warning(
+            "🧠 Gemini disabled this session (quota hit). All Auto queries route to Groq.",
+            icon="⚠️",
+        )
+        if st.sidebar.button("🔁 Retry Gemini", key="reset_gemini_breaker", use_container_width=True):
+            st.session_state.pop("gemini_disabled", None)
+            st.session_state.pop("gemini_disabled_reason", None)
+            st.toast("Gemini re-enabled. Next deep query will retry.", icon="✅")
+            st.rerun()
+
     # Session Stats ---------------------------------------------------------
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 📊 Session Stats")
